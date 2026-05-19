@@ -236,6 +236,18 @@
     grid-template-columns: 1fr;
   }
 }
+    .encounter-mini-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.encounter-mini {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.08);
+}
   </style>
 </head>
 
@@ -345,6 +357,23 @@ document.getElementById("modalNotes").textContent = species.notes;
   `;
 
   document.getElementById("speciesModal").classList.add("open");
+      const relatedEncounters = encounterData.filter(
+  encounter => encounter.speciesId === species.id
+);
+
+const encounterContainer = document.getElementById("modalEncounters");
+
+if (relatedEncounters.length === 0) {
+  encounterContainer.innerHTML = `<p class="muted">No encounters logged yet.</p>`;
+} else {
+  encounterContainer.innerHTML = relatedEncounters.map(encounter => `
+    <div class="encounter-mini">
+      <strong>${encounter.location}</strong>
+      <div class="muted">${encounter.date}</div>
+      <div class="tag">${encounter.confidence}</div>
+    </div>
+  `).join("");
+}
 }
 
 function closeSpeciesModal(event) {
@@ -404,6 +433,10 @@ function closeSpeciesModal(event) {
 <div class="detail-box">
   <strong>Lookalikes</strong>
   <p class="muted" id="modalLookalikes"></p>
+</div>
+      <div class="detail-box">
+  <strong>Your Encounters</strong>
+  <div class="encounter-mini-list" id="modalEncounters"></div>
 </div>
     </div>
   </div>
