@@ -329,12 +329,14 @@
 }
 
     function openSpeciesModal(species) {
-  document.getElementById("modalCommonName").textContent = species.commonName;
-  document.getElementById("modalScientificName").textContent = species.scientificName;
-  document.getElementById("modalCategory").textContent = species.category;
-  document.getElementById("modalStatus").textContent = species.status;
-  document.getElementById("modalConfidence").textContent = species.confidence;
-  document.getElementById("modalNotes").textContent = species.notes;
+document.getElementById("modalCategory").textContent = species.category;
+document.getElementById("modalStatus").textContent = species.status;
+document.getElementById("modalConfidence").textContent = species.confidence;
+document.getElementById("modalHabitat").textContent = species.habitat;
+document.getElementById("modalSeason").textContent = species.season;
+document.getElementById("modalSafety").textContent = species.safety;
+document.getElementById("modalLookalikes").textContent = species.lookalikes;
+document.getElementById("modalNotes").textContent = species.notes;
 
   document.getElementById("modalTags").innerHTML = `
     <span class="tag">${species.category}</span>
