@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanner | SpriteDex</title>
+  <style>
+    :root {
+      --bg: #071510;
+      --panel: rgba(18, 45, 34, 0.85);
+      --text: #e8f7ee;
+      --muted: #9fc7b1;
+      --accent: #7cffc4;
+      --amber: #f2b84b;
+      --danger: #ff6b6b;
+      --border: rgba(124, 255, 196, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(124, 255, 196, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(242, 184, 75, 0.12), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header, main {
+      max-width: 1200px;
+      margin: auto;
+      padding: 28px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      margin-bottom: 8px;
+      letter-spacing: -0.06em;
+    }
+
+    .muted { color: var(--muted); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-top: 28px;
+    }
+
+    .panel {
+      background: linear-gradient(145deg, var(--panel), rgba(8, 24, 18, 0.82));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.24);
+    }
+
+    .scanner-box {
+      min-height: 360px;
+      border-radius: 22px;
+      border: 1px dashed var(--border);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      background:
+        linear-gradient(rgba(124,255,196,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,255,196,0.04) 1px, transparent 1px),
+        rgba(255,255,255,0.035);
+      background-size: 28px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scanner-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 18px rgba(124,255,196,0.9);
+      animation: scan 3s infinite ease-in-out;
+    }
+
+    @keyframes scan {
+      0% { top: 12%; opacity: 0.25; }
+      50% { top: 84%; opacity: 1; }
+      100% { top: 12%; opacity: 0.25; }
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button, .file-label {
+      border: 1px solid var(--border);
+      background: rgba(124, 255, 196, 0.1);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #062015;
+      border-color: var(--accent);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .candidate {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 6px;
+    }
+
+    .candidate strong {
+      font-size: 1.1rem;
+    }
+
+    .confidence {
+      color: var(--amber);
+      font-size: 0.9rem;
+    }
+
+    .warning {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid rgba(255, 107, 107, 0.35);
+      background: rgba(255, 107, 107, 0.08);
+      color: #ffd6d6;
+      border-radius: 16px;
+      line-height: 1.5;
+    }
+
+    .preview {
+      max-width: 100%;
+      max-height: 280px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      display: none;
+      margin: auto;
+    }
+
+    @media (max-width: 850px) {
+      header, main { padding: 18px; }
+
+      nav {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .scanner-box {
+        min-height: 300px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav>
+      <a href="index.html">← SpriteDex Dashboard</a>
+      <span class="muted">Scanner Prototype</span>
+    </nav>
+
+    <h1>Scanner</h1>
+    <p class="muted">
+      Upload a photo and simulate AI species candidates. Later this connects to PlantNet, iNaturalist, GBIF, and your own models.
+    </p>
+  </header>
+
+  <main>
+    <section class="layout">
+      <div class="panel">
+        <h2>Field Scan</h2>
+
+        <div class="scanner-box">
+          <div class="scanner-line"></div>
+
+          <div>
+            <img id="preview" class="preview" alt="Uploaded preview" />
+            <p id="placeholder" class="muted">
+              No image selected yet.<br>
+              Choose a photo or run a mock scan.
+            </p>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <label class="file-label">
+            Upload Photo
+            <input type="file" accept="image/*" onchange="previewImage(event)" />
+          </label>
+
+          <button class="primary" onclick="runMockIdentification()">Run Mock Identification</button>
+        </div>
+
+        <div class="warning">
+          Safety note: SpriteDex suggestions are educational only. Never eat, touch, or medically use wild organisms based only on AI identification.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Candidate Results</h2>
+        <p class="muted">Mock AI candidates will appear here.</p>
+        <div class="results" id="results"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+
+  <script>
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const preview = document.getElementById("preview");
+      const placeholder = document.getElementById("placeholder");
+
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+      placeholder.style.display = "none";
+    }
+
+    function runMockIdentification() {
+      const results = document.getElementById("results");
+
+      const candidates = [
+        {
+          name: "Yarrow",
+          scientific: "Achillea millefolium",
+          confidence: "86%",
+          note: "Medicinal plant candidate. Confirm leaf shape, flower clusters, and scent."
+        },
+        {
+          name: "Queen Anne's Lace",
+          scientific: "Daucus carota",
+          confidence: "61%",
+          note: "Possible lookalike group. Use caution because some similar plants are dangerous."
+        },
+        {
+          name: "Unknown Asteraceae",
+          scientific: "Family-level candidate",
+          confidence: "42%",
+          note: "Low confidence. More photos needed."
+        }
+      ];
+
+      results.innerHTML = "";
+
+      candidates.forEach(candidate => {
+        const card = document.createElement("div");
+        card.className = "candidate";
+
+        card.innerHTML = `
+          <strong>${candidate.name}</strong>
+          <span class="muted"><em>${candidate.scientific}</em></span>
+          <span class="confidence">Confidence: ${candidate.confidence}</span>
+          <span class="muted">${candidate.note}</span>
+        `;
+
+        results.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
