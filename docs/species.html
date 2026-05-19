@@ -248,6 +248,50 @@
   background: rgba(255,255,255,0.045);
   border: 1px solid rgba(255,255,255,0.08);
 }
+    .species-image {
+  height: 170px;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.species-image.locked {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--accent);
+  color: #062015;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.badge.unknown {
+  background: rgba(255,255,255,0.12);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.rarity {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(7, 21, 16, 0.82);
+  color: var(--amber);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+}
   </style>
 </head>
 
