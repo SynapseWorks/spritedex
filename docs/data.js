@@ -6,7 +6,11 @@ const speciesData = [
     category: "Plant",
     status: "Invasive",
     confidence: "High",
-    notes: "Garlic-scented edible plant. Use caution and confirm ID."
+    habitat: "Woodland edges, trails, disturbed soil",
+    season: "Spring to early summer",
+    safety: "Edible with caution. Confirm ID before use.",
+    lookalikes: "Young violets, other mustard-family plants",
+    notes: "Garlic-scented invasive plant. Removing it can help native understory species."
   },
   {
     id: 2,
@@ -15,7 +19,11 @@ const speciesData = [
     category: "Plant",
     status: "Medicinal",
     confidence: "Candidate",
-    notes: "Traditional medicinal plant. Important to confirm lookalikes."
+    habitat: "Fields, roadsides, lawns, sunny disturbed areas",
+    season: "Late spring through fall",
+    safety: "May cause allergic reactions. Avoid during pregnancy unless guided by a professional.",
+    lookalikes: "Queen Anne’s lace, poison hemlock, wild carrot",
+    notes: "Traditional medicinal plant often associated with wound care and resilience."
   },
   {
     id: 3,
@@ -24,7 +32,11 @@ const speciesData = [
     category: "Bird",
     status: "Common",
     confidence: "Observed",
-    notes: "Common backyard and woodland-edge bird."
+    habitat: "Lawns, gardens, forest edges, parks",
+    season: "Year-round in parts of Ontario; highly visible in spring and summer",
+    safety: "Observe from a respectful distance, especially near nests.",
+    lookalikes: "Eastern towhee, varied thrush in western regions",
+    notes: "Common backyard and woodland-edge bird, often seen foraging for worms."
   },
   {
     id: 4,
@@ -33,36 +45,10 @@ const speciesData = [
     category: "Plant",
     status: "Edible",
     confidence: "Confirmed",
+    habitat: "Lawns, roadsides, fields, disturbed soil",
+    season: "Spring through fall",
+    safety: "Generally edible, but avoid sprayed lawns or polluted roadsides.",
+    lookalikes: "Cat’s ear, hawkweed, sow thistle",
     notes: "Common edible plant with leaves, flowers, and roots used traditionally."
-  }
-];
-
-const encounterData = [
-  {
-    id: 1,
-    speciesId: 1,
-    name: "Garlic Mustard",
-    category: "Plant",
-    confidence: "High confidence",
-    location: "Trail edge, Newcastle",
-    date: "2026-05-19"
-  },
-  {
-    id: 2,
-    speciesId: 3,
-    name: "American Robin",
-    category: "Bird",
-    confidence: "Observed",
-    location: "Backyard",
-    date: "2026-05-19"
-  },
-  {
-    id: 3,
-    speciesId: 4,
-    name: "Dandelion",
-    category: "Plant",
-    confidence: "Confirmed",
-    location: "Lawn edge",
-    date: "2026-05-19"
   }
 ];
