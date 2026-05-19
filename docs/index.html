@@ -317,20 +317,51 @@
     SpriteDex · Project Sprite / AetherOS ecosystem
   </footer>
 <script src="data.js"></script>
-  <script>
-    function mockScan() {
-      const encounters = document.getElementById("encounters");
+<script>
+  function renderEncounters() {
+    const container = document.getElementById("encounters");
 
+    container.innerHTML = "";
+
+    encounterData.forEach(encounter => {
       const item = document.createElement("div");
+
       item.className = "list-item";
+
       item.innerHTML = `
-        <span>Yarrow</span>
-        <span class="tag">Plant · AI candidate</span>
+        <div>
+          <strong>${encounter.name}</strong>
+          <div class="muted">${encounter.location}</div>
+        </div>
+
+        <span class="tag">
+          ${encounter.category} · ${encounter.confidence}
+        </span>
       `;
 
-      encounters.prepend(item);
-      alert("Mock scan complete: Yarrow added as an AI candidate.");
-    }
-  </script>
+      container.appendChild(item);
+    });
+  }
+
+  function mockScan() {
+    const newEncounter = {
+      id: Date.now(),
+      speciesId: 2,
+      name: "Yarrow",
+      category: "Plant",
+      confidence: "AI candidate",
+      location: "Field edge",
+      date: new Date().toISOString().split("T")[0]
+    };
+
+    encounterData.unshift(newEncounter);
+
+    renderEncounters();
+
+    alert("Mock scan complete: Yarrow added.");
+  }
+
+  renderEncounters();
+</script>
 </body>
 </html>
