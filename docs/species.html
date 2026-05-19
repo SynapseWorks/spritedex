@@ -367,6 +367,15 @@
     card.className = "card";
 
     card.innerHTML = `
+    <div 
+  class="species-image ${species.discovered ? "" : "locked"}" 
+  style="background-image: url('${species.image}')"
+>
+  <span class="badge ${species.discovered ? "" : "unknown"}">
+    ${species.discovered ? "DISCOVERED" : "UNDISCOVERED"}
+  </span>
+  <span class="rarity">${species.rarity}</span>
+</div>
       <h2>${species.commonName}</h2>
       <div class="scientific">${species.scientificName}</div>
 
@@ -394,6 +403,13 @@ document.getElementById("modalSeason").textContent = species.season;
 document.getElementById("modalSafety").textContent = species.safety;
 document.getElementById("modalLookalikes").textContent = species.lookalikes;
 document.getElementById("modalNotes").textContent = species.notes;
+      document.getElementById("modalTags").innerHTML = `
+  <span class="tag">${species.category}</span>
+  <span class="tag">${species.status}</span>
+  <span class="tag">${species.confidence}</span>
+  <span class="tag">${species.rarity}</span>
+  <span class="tag">${species.discovered ? "Discovered" : "Undiscovered"}</span>
+`;
 
   document.getElementById("modalTags").innerHTML = `
     <span class="tag">${species.category}</span>
