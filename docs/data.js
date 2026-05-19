@@ -10,7 +10,10 @@ const speciesData = [
     season: "Spring to early summer",
     safety: "Edible with caution. Confirm ID before use.",
     lookalikes: "Young violets, other mustard-family plants",
-    notes: "Garlic-scented invasive plant. Removing it can help native understory species."
+    notes: "Garlic-scented invasive plant. Removing it can help native understory species.",
+    image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13",
+rarity: "Common",
+discovered: false,
   },
   {
     id: 2,
@@ -23,7 +26,10 @@ const speciesData = [
     season: "Late spring through fall",
     safety: "May cause allergic reactions. Avoid during pregnancy unless guided by a professional.",
     lookalikes: "Queen Anne’s lace, poison hemlock, wild carrot",
-    notes: "Traditional medicinal plant often associated with wound care and resilience."
+    notes: "Traditional medicinal plant often associated with wound care and resilience.",
+    image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13",
+rarity: "Common",
+discovered: false,
   },
   {
     id: 3,
@@ -36,7 +42,10 @@ const speciesData = [
     season: "Year-round in parts of Ontario; highly visible in spring and summer",
     safety: "Observe from a respectful distance, especially near nests.",
     lookalikes: "Eastern towhee, varied thrush in western regions",
-    notes: "Common backyard and woodland-edge bird, often seen foraging for worms."
+    notes: "Common backyard and woodland-edge bird, often seen foraging for worms.",
+    image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13",
+rarity: "Common",
+discovered: true,
   },
   {
     id: 4,
@@ -49,6 +58,9 @@ const speciesData = [
     season: "Spring through fall",
     safety: "Generally edible, but avoid sprayed lawns or polluted roadsides.",
     lookalikes: "Cat’s ear, hawkweed, sow thistle",
-    notes: "Common edible plant with leaves, flowers, and roots used traditionally."
+    notes: "Common edible plant with leaves, flowers, and roots used traditionally.",
+    image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13",
+rarity: "Common",
+discovered: true,
   }
 ];
