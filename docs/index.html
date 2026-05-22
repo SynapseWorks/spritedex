@@ -13,20 +13,17 @@
       --muted: #9fc7b1;
       --accent: #7cffc4;
       --amber: #f2b84b;
-      --danger: #ff6b6b;
       --border: rgba(124, 255, 196, 0.25);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Inter, system-ui, sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(124, 255, 196, 0.18), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(242, 184, 75, 0.12), transparent 35%),
+        radial-gradient(circle at top left, rgba(124,255,196,0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(242,184,75,0.12), transparent 35%),
         var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -35,11 +32,16 @@
     header {
       padding: 28px;
       border-bottom: 1px solid var(--border);
-      background: rgba(7, 21, 16, 0.75);
+      background: rgba(7,21,16,0.75);
       backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 10;
+    }
+
+    .brand, main {
+      max-width: 1200px;
+      margin: auto;
     }
 
     .brand {
@@ -47,8 +49,6 @@
       justify-content: space-between;
       gap: 16px;
       align-items: center;
-      max-width: 1200px;
-      margin: auto;
     }
 
     h1 {
@@ -57,10 +57,7 @@
       letter-spacing: -0.06em;
     }
 
-    .subtitle {
-      color: var(--muted);
-      margin-top: 6px;
-    }
+    .subtitle, .muted { color: var(--muted); }
 
     .status {
       border: 1px solid var(--border);
@@ -71,9 +68,32 @@
       white-space: nowrap;
     }
 
+    .app-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .app-nav a {
+      border: 1px solid var(--border);
+      background: rgba(124,255,196,0.08);
+      color: var(--text);
+      padding: 10px 13px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .app-nav a.active {
+      background: var(--accent);
+      color: #062015;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(124,255,196,0.35);
+    }
+
     main {
-      max-width: 1200px;
-      margin: auto;
       padding: 28px;
       display: grid;
       gap: 24px;
@@ -85,17 +105,23 @@
       gap: 24px;
     }
 
-    .panel {
-      background: linear-gradient(145deg, var(--panel), rgba(8, 24, 18, 0.82));
+    .panel, .card {
+      background: linear-gradient(145deg, var(--panel), rgba(8,24,18,0.82));
       border: 1px solid var(--border);
       border-radius: 24px;
       padding: 24px;
-      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.28);
     }
 
-    .panel h2,
-    .card h3 {
-      margin-top: 0;
+    .card {
+      background: var(--panel-2);
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
     }
 
     .scanner {
@@ -103,44 +129,17 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .scanner::after {
-      content: "";
-      position: absolute;
-      inset: 24px;
-      border: 1px solid rgba(124, 255, 196, 0.2);
-      border-radius: 20px;
-      background:
-        linear-gradient(rgba(124,255,196,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,255,196,0.05) 1px, transparent 1px);
-      background-size: 24px 24px;
-      pointer-events: none;
-    }
-
-    .scanner-content {
-      position: relative;
-      z-index: 1;
-    }
-
-    .scanner h2 {
-      font-size: clamp(2rem, 4vw, 3.4rem);
-      margin-bottom: 12px;
     }
 
     .button-row {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      position: relative;
-      z-index: 1;
     }
 
     button {
       border: 1px solid var(--border);
-      background: rgba(124, 255, 196, 0.1);
+      background: rgba(124,255,196,0.1);
       color: var(--text);
       padding: 12px 16px;
       border-radius: 14px;
@@ -154,25 +153,7 @@
       border-color: var(--accent);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .card {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .species-list,
-    .encounter-list {
+    .species-list, .encounter-list {
       display: grid;
       gap: 12px;
     }
@@ -183,8 +164,8 @@
       gap: 12px;
       padding: 14px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .tag {
@@ -197,15 +178,12 @@
       min-height: 260px;
       border-radius: 20px;
       border: 1px dashed var(--border);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(124, 255, 196, 0.16), transparent 20%),
-        radial-gradient(circle at 70% 60%, rgba(242, 184, 75, 0.12), transparent 18%),
-        rgba(255,255,255,0.035);
       display: grid;
       place-items: center;
       color: var(--muted);
       text-align: center;
       padding: 24px;
+      cursor: pointer;
     }
 
     footer {
@@ -214,121 +192,82 @@
       text-align: center;
     }
 
-    @media (max-width: 850px) {
-      .hero,
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .brand {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      header,
-      main {
-        padding: 18px;
-      }
+    @media (max-width: 900px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .brand { flex-direction: column; align-items: flex-start; }
+      header, main { padding: 18px; }
+      .list-item { flex-direction: column; }
     }
-    .app-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.app-nav a {
-  border: 1px solid var(--border);
-  background: rgba(124, 255, 196, 0.08);
-  color: var(--text);
-  padding: 10px 13px;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.app-nav a:hover {
-  background: rgba(124, 255, 196, 0.18);
-}
-    .app-nav a.active {
-  background: var(--accent);
-  color: #062015;
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(124,255,196,0.35);
-}
   </style>
 </head>
+
 <body>
   <header>
     <div class="brand">
       <div>
         <h1>SpriteDex</h1>
         <div class="subtitle">A living ecological field terminal</div>
+
+        <div class="app-nav">
+          <a href="index.html" class="active">Dashboard</a>
+          <a href="scanner.html">Scanner</a>
+          <a href="species.html">SpeciesDex</a>
+          <a href="encounters.html">Encounters</a>
+          <a href="map.html">Map</a>
+          <a href="collection.html">Collection</a>
+        </div>
       </div>
+
       <div class="status">Prototype Mode</div>
     </div>
-
   </header>
 
   <main>
-        <div class="app-nav">
-  <a href="index.html" class="active">Dashboard</a>
-  <a href="scanner.html">Scanner</a>
-  <a href="species.html">SpeciesDex</a>
-  <a href="encounters.html">Encounters</a>
-  <a href="map.html">Map</a>
-  <a href="collection.html">Collection</a>
-</div>
     <section class="hero">
       <div class="panel scanner">
-        <div class="scanner-content">
+        <div>
           <h2>Scanner Ready</h2>
-          <p class="muted">
-            Upload a photo, receive candidate species, and save your encounter to the field journal.
-          </p>
+          <p class="muted">Upload a photo, receive candidate species, and save your encounter.</p>
         </div>
 
         <div class="button-row">
           <button class="primary" onclick="window.location.href='scanner.html'">Open Scanner</button>
-          <button>Log Manual Encounter</button>
-          <button onclick="window.location.href='species.html'">Open SpeciesDex</button>        </div>
+          <button onclick="window.location.href='encounters.html'">Log Manual Encounter</button>
+          <button onclick="window.location.href='species.html'">Open SpeciesDex</button>
+        </div>
       </div>
 
       <div class="panel">
         <h2>Today’s Field Status</h2>
         <p class="muted">Newcastle, Ontario focus area</p>
+
         <div class="species-list">
-          <div class="list-item">
-            <span>Known Species</span>
-            <strong>12</strong>
-          </div>
-          <div class="list-item">
-            <span>Encounters Logged</span>
-            <strong>4</strong>
-          </div>
-          <div class="list-item">
-            <span>Confirmed IDs</span>
-            <strong>3</strong>
-          </div>
+          <div class="list-item"><span>Known Species</span><strong id="knownSpeciesCount">Loading...</strong></div>
+          <div class="list-item"><span>Encounters Logged</span><strong id="encounterCount">Loading...</strong></div>
+          <div class="list-item"><span>Confirmed IDs</span><strong id="confirmedCount">Loading...</strong></div>
         </div>
       </div>
     </section>
 
     <section class="grid">
-      <div class="card">
+      <div class="card" onclick="window.location.href='scanner.html'">
+        <h3>Scanner</h3>
+        <p class="muted">Upload photos and simulate species candidate results.</p>
+      </div>
+
+      <div class="card" onclick="window.location.href='species.html'">
         <h3>SpeciesDex</h3>
         <p class="muted">Canonical species reference library.</p>
       </div>
 
-      <div class="card" onclick="window.location.href='encounters.html'" style="cursor: pointer;">
+      <div class="card" onclick="window.location.href='encounters.html'">
         <h3>Encounter Journal</h3>
-        <p class="muted">Your personal sightings, notes, photos, and field observations.</p>
+        <p class="muted">Your sightings, notes, photos, and field observations.</p>
       </div>
 
-      <div class="card">
-        <h3>Grimoire Mode</h3>
-        <p class="muted">Medicinal, edible, ecological, and symbolic notes.</p>
+      <div class="card" onclick="window.location.href='collection.html'">
+        <h3>Collection</h3>
+        <p class="muted">Track discovered species and field progress.</p>
       </div>
     </section>
 
@@ -340,323 +279,163 @@
 
       <div class="panel">
         <h2>Local Map</h2>
-        <div class="map-placeholder" onclick="window.location.href='map.html'" style="cursor: pointer;">
+        <div class="map-placeholder" onclick="window.location.href='map.html'">
           Open Ecological Map<br />
           Future: Leaflet / MapLibre + PostGIS encounter points
         </div>
       </div>
-      <div class="card" onclick="window.location.href='collection.html'" style="cursor: pointer;">
-  <h3>Collection</h3>
-  <p class="muted">Track discovered species, confirmed sightings, and field progress.</p>
-</div>
     </section>
 
+    <section class="hero">
+      <div class="panel">
+        <h2>Data Network Status</h2>
+        <p class="muted">Automated biodiversity sync health.</p>
 
-    <div class="panel">
-  <h2>Data Network Status</h2>
-  <p class="muted">Automated biodiversity sync health.</p>
+        <div class="species-list">
+          <div class="list-item"><span>Last Sync</span><strong id="lastSync">Loading...</strong></div>
+          <div class="list-item"><span>Status</span><strong id="syncStatus">Loading...</strong></div>
+          <div class="list-item"><span>Source</span><strong id="syncSource">Loading...</strong></div>
+        </div>
+      </div>
 
-  <div class="species-list">
-    <div class="list-item">
-      <span>Last Sync</span>
-      <strong id="lastSync">Loading...</strong>
-    </div>
-
-    <div class="list-item">
-      <span>Status</span>
-      <strong id="syncStatus">Loading...</strong>
-    </div>
-
-    <div class="list-item">
-      <span>Source</span>
-      <strong>GitHub Actions</strong>
-    </div>
-  </div>
-</div>
+      <div class="panel">
+        <h2>iNaturalist Ontario Feed</h2>
+        <p class="muted">Recent research-grade observations from Ontario.</p>
+        <div class="species-list" id="inatFeed">
+          <div class="list-item"><span>Loading observations...</span></div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
     SpriteDex · Project Sprite / AetherOS ecosystem
   </footer>
-<script>
-  let speciesData = [];
-  let encounterData = [];
 
-  async function loadLocalData() {
-    try {
-      const [speciesResponse, encounterResponse] = await Promise.all([
-        fetch("./data/species.json"),
-        fetch("./data/encounters.json")
-      ]);
+  <script>
+    let speciesData = [];
+    let encounterData = [];
 
-      if (!speciesResponse.ok) throw new Error("species.json missing");
-      if (!encounterResponse.ok) throw new Error("encounters.json missing");
-
-      speciesData = await speciesResponse.json();
-      encounterData = await encounterResponse.json();
-
-      renderFieldStatus();
-      renderEncounters();
-    } catch (error) {
-      console.error("Local data failed:", error);
-
-      document.getElementById("knownSpeciesCount").textContent = "Unavailable";
-      document.getElementById("encounterCount").textContent = "Unavailable";
-      document.getElementById("confirmedCount").textContent = "Unavailable";
-
-      document.getElementById("encounters").innerHTML = `
-        <div class="list-item">
-          <span>Could not load local SpriteDex data.</span>
-        </div>
-      `;
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
     }
-  }
 
-  function renderFieldStatus() {
-    const confirmed = encounterData.filter(encounter =>
-      encounter.confidence.toLowerCase().includes("confirmed") ||
-      encounter.confidence.toLowerCase().includes("high")
-    ).length;
-
-    document.getElementById("knownSpeciesCount").textContent = speciesData.length;
-    document.getElementById("encounterCount").textContent = encounterData.length;
-    document.getElementById("confirmedCount").textContent = confirmed;
-  }
-
-  function renderEncounters() {
-    const container = document.getElementById("encounters");
-    container.innerHTML = "";
-
-    encounterData.slice(0, 5).forEach(encounter => {
-      const item = document.createElement("div");
-      item.className = "list-item";
-
-      item.innerHTML = `
-        <div>
-          <strong>${encounter.name}</strong>
-          <div class="muted">${encounter.location}</div>
-        </div>
-
-        <span class="tag">
-          ${encounter.category} · ${encounter.confidence}
-        </span>
-      `;
-
-      container.appendChild(item);
-    });
-  }
-
-  async function renderSyncStatus() {
-    try {
-      const response = await fetch("./data/sync-status.json?cacheBust=" + Date.now());
-
-      if (!response.ok) {
-        throw new Error("sync-status.json missing");
-      }
-
-      const sync = await response.json();
-
-document.getElementById("lastSync").textContent =
-  sync.lastSync ? sync.lastSync.replace("T", " ").replace("+00:00", " UTC") : "Unknown";
-
-      document.getElementById("syncStatus").textContent =
-        sync.status || "unknown";
-
-      document.getElementById("syncSource").textContent =
-        sync.source || "GitHub Actions";
-    } catch (error) {
-      console.error("Sync status failed:", error);
-
-      document.getElementById("lastSync").textContent = "Not available";
-      document.getElementById("syncStatus").textContent = "offline";
-      document.getElementById("syncSource").textContent = "No sync file";
+    function setHTML(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = value;
     }
-  }
 
-  async function renderInatFeed() {
-    const container = document.getElementById("inatFeed");
+    async function loadJson(path) {
+      const response = await fetch(path + "?v=" + Date.now());
+      if (!response.ok) throw new Error(path + " not found");
+      return response.json();
+    }
 
-    try {
-      const response = await fetch("./data/inat-ontario-observations.json?cacheBust=" + Date.now());
-
-      if (!response.ok) {
-        throw new Error("inat-ontario-observations.json missing");
+    async function loadLocalData() {
+      try {
+        speciesData = await loadJson("./data/species.json");
+        encounterData = await loadJson("./data/encounters.json");
+        renderFieldStatus();
+        renderEncounters();
+      } catch (error) {
+        console.error("Local data failed:", error);
+        setText("knownSpeciesCount", "Unavailable");
+        setText("encounterCount", "Unavailable");
+        setText("confirmedCount", "Unavailable");
+        setHTML("encounters", `<div class="list-item"><span>Could not load local SpriteDex data.</span></div>`);
       }
+    }
 
-      const data = await response.json();
+    function renderFieldStatus() {
+      const confirmed = encounterData.filter(e =>
+        String(e.confidence || "").toLowerCase().includes("confirmed") ||
+        String(e.confidence || "").toLowerCase().includes("high")
+      ).length;
+
+      setText("knownSpeciesCount", speciesData.length);
+      setText("encounterCount", encounterData.length);
+      setText("confirmedCount", confirmed);
+    }
+
+    function renderEncounters() {
+      const container = document.getElementById("encounters");
+      if (!container) return;
+
       container.innerHTML = "";
 
-      if (!data.observations || data.observations.length === 0) {
-        container.innerHTML = `
-          <div class="list-item">
-            <span>No observations found yet.</span>
-          </div>
-        `;
-        return;
-      }
-
-      data.observations.slice(0, 5).forEach(observation => {
+      encounterData.slice(0, 5).forEach(encounter => {
         const item = document.createElement("div");
         item.className = "list-item";
-
-        const taxon = observation.taxon || {};
-        const commonName =
-          taxon.preferredCommonName ||
-          taxon.name ||
-          "Unknown taxon";
-
         item.innerHTML = `
           <div>
-            <strong>${commonName}</strong>
-            <div class="muted"><em>${taxon.name || ""}</em></div>
+            <strong>${encounter.name}</strong>
+            <div class="muted">${encounter.location}</div>
           </div>
-          <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+          <span class="tag">${encounter.category} · ${encounter.confidence}</span>
         `;
-
         container.appendChild(item);
       });
-    } catch (error) {
-      console.error("iNaturalist feed failed:", error);
-
-      container.innerHTML = `
-        <div class="list-item">
-          <span>iNaturalist feed unavailable</span>
-        </div>
-      `;
     }
-  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    loadLocalData();
-    renderSyncStatus();
-    renderInatFeed();
-  });
-</script>
-<script>
-  let speciesData = [];
-  let encounterData = [];
+    async function renderSyncStatus() {
+      try {
+        const sync = await loadJson("./data/sync-status.json");
 
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  }
+        setText(
+          "lastSync",
+          sync.lastSync
+            ? sync.lastSync.replace("T", " ").replace("+00:00", " UTC")
+            : "Unknown"
+        );
 
-  function setHTML(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = value;
-  }
-
-  async function loadJson(path) {
-    const response = await fetch(path + "?v=" + Date.now());
-    if (!response.ok) throw new Error(path + " not found");
-    return response.json();
-  }
-
-  async function loadLocalData() {
-    try {
-      speciesData = await loadJson("./data/species.json");
-      encounterData = await loadJson("./data/encounters.json");
-
-      renderFieldStatus();
-      renderEncounters();
-    } catch (error) {
-      console.error("Local data failed:", error);
-      setText("knownSpeciesCount", "Unavailable");
-      setText("encounterCount", "Unavailable");
-      setText("confirmedCount", "Unavailable");
-      setHTML("encounters", `<div class="list-item"><span>Could not load local SpriteDex data.</span></div>`);
-    }
-  }
-
-  function renderFieldStatus() {
-    const confirmed = encounterData.filter(e =>
-      String(e.confidence || "").toLowerCase().includes("confirmed") ||
-      String(e.confidence || "").toLowerCase().includes("high")
-    ).length;
-
-    setText("knownSpeciesCount", speciesData.length);
-    setText("encounterCount", encounterData.length);
-    setText("confirmedCount", confirmed);
-  }
-
-  function renderEncounters() {
-    const container = document.getElementById("encounters");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    encounterData.slice(0, 5).forEach(encounter => {
-      const item = document.createElement("div");
-      item.className = "list-item";
-      item.innerHTML = `
-        <div>
-          <strong>${encounter.name}</strong>
-          <div class="muted">${encounter.location}</div>
-        </div>
-        <span class="tag">${encounter.category} · ${encounter.confidence}</span>
-      `;
-      container.appendChild(item);
-    });
-  }
-
-  async function renderSyncStatus() {
-    try {
-      const sync = await loadJson("./data/sync-status.json");
-
-      setText(
-        "lastSync",
-        sync.lastSync
-          ? sync.lastSync.replace("T", " ").replace("+00:00", " UTC")
-          : "Unknown"
-      );
-
-      setText("syncStatus", sync.status || "unknown");
-      setText("syncSource", sync.source || "GitHub Actions");
-    } catch (error) {
-      console.error("Sync status failed:", error);
-      setText("lastSync", "Not available");
-      setText("syncStatus", "offline");
-      setText("syncSource", "No sync file");
-    }
-  }
-
-  async function renderInatFeed() {
-    try {
-      const data = await loadJson("./data/inat-ontario-observations.json");
-      const observations = data.observations || [];
-
-      if (!observations.length) {
-        setHTML("inatFeed", `<div class="list-item"><span>No observations found yet.</span></div>`);
-        return;
+        setText("syncStatus", sync.status || "unknown");
+        setText("syncSource", sync.source || "GitHub Actions");
+      } catch (error) {
+        console.error("Sync status failed:", error);
+        setText("lastSync", "Not available");
+        setText("syncStatus", "offline");
+        setText("syncSource", "No sync file");
       }
-
-      const html = observations.slice(0, 5).map(observation => {
-        const taxon = observation.taxon || {};
-        const commonName = taxon.preferredCommonName || taxon.name || "Unknown taxon";
-
-        return `
-          <div class="list-item">
-            <div>
-              <strong>${commonName}</strong>
-              <div class="muted"><em>${taxon.name || ""}</em></div>
-            </div>
-            <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
-          </div>
-        `;
-      }).join("");
-
-      setHTML("inatFeed", html);
-    } catch (error) {
-      console.error("iNaturalist feed failed:", error);
-      setHTML("inatFeed", `<div class="list-item"><span>iNaturalist feed unavailable</span></div>`);
     }
-  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    loadLocalData();
-    renderSyncStatus();
-    renderInatFeed();
-  });
-</script>
+    async function renderInatFeed() {
+      try {
+        const data = await loadJson("./data/inat-ontario-observations.json");
+        const observations = data.observations || [];
+
+        if (!observations.length) {
+          setHTML("inatFeed", `<div class="list-item"><span>No observations found yet.</span></div>`);
+          return;
+        }
+
+        const html = observations.slice(0, 5).map(observation => {
+          const taxon = observation.taxon || {};
+          const commonName = taxon.preferredCommonName || taxon.name || "Unknown taxon";
+
+          return `
+            <div class="list-item">
+              <div>
+                <strong>${commonName}</strong>
+                <div class="muted"><em>${taxon.name || ""}</em></div>
+              </div>
+              <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+            </div>
+          `;
+        }).join("");
+
+        setHTML("inatFeed", html);
+      } catch (error) {
+        console.error("iNaturalist feed failed:", error);
+        setHTML("inatFeed", `<div class="list-item"><span>iNaturalist feed unavailable</span></div>`);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadLocalData();
+      renderSyncStatus();
+      renderInatFeed();
+    });
+  </script>
 </body>
 </html>
