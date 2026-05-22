@@ -220,8 +220,20 @@
     </section>
   </main>
 
-  <script src="data.js"></script>
+<script>
+  let speciesData = [];
+  let encounterData = [];
 
+  async function loadData() {
+    const [speciesResponse, encounterResponse] = await Promise.all([
+      fetch("./data/species.json"),
+      fetch("./data/encounters.json")
+    ]);
+
+    speciesData = await speciesResponse.json();
+    encounterData = await encounterResponse.json();
+  }
+</script>
   <script>
     const mockMapPositions = [
       { encounterId: 1, x: 34, y: 42 },
@@ -263,7 +275,8 @@
       });
     }
 
-    renderMap();
-  </script>
+loadData().then(() => {
+  renderMap();
+});  </script>
 </body>
 </html>
