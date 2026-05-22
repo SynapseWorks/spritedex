@@ -24,6 +24,9 @@ jobs:
       - name: Fetch iNaturalist starter data
         run: python scripts/fetch_inat_observations.py
 
+      - name: Fetch iNaturalist taxa starter data
+        run: python scripts/fetch_inat_taxa.py
+
       - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
