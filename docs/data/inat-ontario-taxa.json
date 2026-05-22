@@ -1,0 +1,203 @@
+{
+  "source": "iNaturalist Taxa API",
+  "generatedAt": "2026-05-22T15:42:27.754518+00:00",
+  "queries": [
+    "yarrow",
+    "garlic mustard",
+    "dandelion",
+    "monarch",
+    "american robin"
+  ],
+  "count": 21,
+  "taxa": [
+    {
+      "id": 373844,
+      "name": "Anthemideae",
+      "rank": "tribe",
+      "preferredCommonName": "Chamomiles, yarrows, and allies",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Anthemideae",
+      "matchedTerm": "yarrow"
+    },
+    {
+      "id": 52818,
+      "name": "Achillea",
+      "rank": "genus",
+      "preferredCommonName": "yarrows",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Achillea",
+      "matchedTerm": "yarrow"
+    },
+    {
+      "id": 1105043,
+      "name": "Achillea millefolium",
+      "rank": "complex",
+      "preferredCommonName": "common yarrow complex",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Achillea_millefolium",
+      "matchedTerm": "yarrow"
+    },
+    {
+      "id": 52821,
+      "name": "Achillea millefolium",
+      "rank": "species",
+      "preferredCommonName": "common yarrow",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Achillea_millefolium",
+      "matchedTerm": "yarrow"
+    },
+    {
+      "id": 1266323,
+      "name": "Melanoplus bivittatus",
+      "rank": "complex",
+      "preferredCommonName": "Two-striped and Yarrow\u2019s Grasshoppers",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Melanoplus_bivittatus",
+      "matchedTerm": "yarrow"
+    },
+    {
+      "id": 56062,
+      "name": "Alliaria",
+      "rank": "genus",
+      "preferredCommonName": "garlic mustards",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Alliaria",
+      "matchedTerm": "garlic mustard"
+    },
+    {
+      "id": 56061,
+      "name": "Alliaria petiolata",
+      "rank": "species",
+      "preferredCommonName": "garlic mustard",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Alliaria_petiolata",
+      "matchedTerm": "garlic mustard"
+    },
+    {
+      "id": 1048436,
+      "name": "Lipaphis alliariae",
+      "rank": "species",
+      "preferredCommonName": "Garlic Mustard Aphid",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": null,
+      "matchedTerm": "garlic mustard"
+    },
+    {
+      "id": 447425,
+      "name": "Cichorioideae",
+      "rank": "subfamily",
+      "preferredCommonName": "chicories, dandelions, and allies",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Cichorioideae",
+      "matchedTerm": "dandelion"
+    },
+    {
+      "id": 359450,
+      "name": "Cichorieae",
+      "rank": "tribe",
+      "preferredCommonName": "Lettuce, Chicory, Dandelion and Salsify Tribe",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Cichorieae",
+      "matchedTerm": "dandelion"
+    },
+    {
+      "id": 632701,
+      "name": "Crepidinae",
+      "rank": "subtribe",
+      "preferredCommonName": "dandelions, hawksbeards, and rattlesnake roots",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Crepidinae",
+      "matchedTerm": "dandelion"
+    },
+    {
+      "id": 47603,
+      "name": "Taraxacum",
+      "rank": "genus",
+      "preferredCommonName": "dandelions",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Taraxacum",
+      "matchedTerm": "dandelion"
+    },
+    {
+      "id": 967514,
+      "name": "Taraxacum",
+      "rank": "section",
+      "preferredCommonName": "common dandelions",
+      "iconicTaxonName": "Plantae",
+      "wikipediaUrl": "https://en.wikipedia.org/wiki/Taraxacum",
+      "matchedTerm": "dandelion"
+    },
+    {
+      "id": 522900,
+      "name": "Danaina",
+      "rank": "subtribe",
+      "preferredCommonName": "Tiger Butterflies",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Danaini",
+      "matchedTerm": "monarch"
+    },
+    {
+      "id": 48663,
+      "name": "Danaus",
+      "rank": "genus",
+      "preferredCommonName": "Tiger Milkweed Butterflies",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Danaus_(genus)",
+      "matchedTerm": "monarch"
+    },
+    {
+      "id": 48662,
+      "name": "Danaus plexippus",
+      "rank": "species",
+      "preferredCommonName": "Monarch",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Monarch_butterfly",
+      "matchedTerm": "monarch"
+    },
+    {
+      "id": 71338,
+      "name": "Monarchidae",
+      "rank": "family",
+      "preferredCommonName": "Monarch Flycatchers",
+      "iconicTaxonName": "Aves",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Monarch_flycatcher",
+      "matchedTerm": "monarch"
+    },
+    {
+      "id": 67835,
+      "name": "Danaus chrysippus",
+      "rank": "species",
+      "preferredCommonName": "Plain Tiger Butterfly",
+      "iconicTaxonName": "Insecta",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/Danaus_chrysippus",
+      "matchedTerm": "monarch"
+    },
+    {
+      "id": 12727,
+      "name": "Turdus migratorius",
+      "rank": "species",
+      "preferredCommonName": "American Robin",
+      "iconicTaxonName": "Aves",
+      "wikipediaUrl": "http://en.wikipedia.org/wiki/American_robin",
+      "matchedTerm": "american robin"
+    },
+    {
+      "id": 719063,
+      "name": "Turdus migratorius nigrideus",
+      "rank": "subspecies",
+      "preferredCommonName": "Newfoundland Robin",
+      "iconicTaxonName": "Aves",
+      "wikipediaUrl": null,
+      "matchedTerm": "american robin"
+    },
+    {
+      "id": 206869,
+      "name": "Turdus migratorius confinis",
+      "rank": "subspecies",
+      "preferredCommonName": "San Lucas Robin",
+      "iconicTaxonName": "Aves",
+      "wikipediaUrl": null,
+      "matchedTerm": "american robin"
+    }
+  ]
+}
