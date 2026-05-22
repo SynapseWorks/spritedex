@@ -7,14 +7,13 @@ from pathlib import Path
 OUTPUT_DIR = Path("docs/data")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Ontario place_id on iNaturalist is commonly 6883.
-# This starter fetch keeps it tiny and safe.
 params = {
     "place_id": "6883",
     "quality_grade": "research",
     "per_page": "20",
     "order_by": "observed_on",
     "order": "desc",
+    "photos": "true"
 }
 
 url = "https://api.inaturalist.org/v1/observations?" + urllib.parse.urlencode(params)
@@ -35,30 +34,34 @@ for item in payload.get("results", []):
     taxon = item.get("taxon") or {}
 
     photos = item.get("photos") or []
-photo_url = None
+    photo_url = None
 
-if photos:
-    photo_url = photos[0].get("url")
-    if photo_url:
-        photo_url = photo_url.replace("square", "medium")
+    if photos:
+        photo_url = photos[0].get("url")
+        if photo_url:
+            photo_url = photo_url.replace("square", "medium")
 
-observations.append({
-    "id": item.get("id"),
-    "observedOn": item.get("observed_on"),
-    "createdAt": item.get("created_at"),
-    "uri": item.get("uri"),
-    "placeGuess": item.get("place_guess"),
-    "latitude": item.get("geojson", {}).get("coordinates", [None, None])[1] if item.get("geojson") else None,
-    "longitude": item.get("geojson", {}).get("coordinates", [None, None])[0] if item.get("geojson") else None,
-    "photoUrl": photo_url,
-    "taxon": {
-        "id": taxon.get("id"),
-        "name": taxon.get("name"),
-        "preferredCommonName": taxon.get("preferred_common_name"),
-        "rank": taxon.get("rank"),
-        "iconicTaxonName": taxon.get("iconic_taxon_name")
-    }
-})
+    coordinates = item.get("geojson", {}).get("coordinates") if item.get("geojson") else [None, None]
+    longitude = coordinates[0] if coordinates and len(coordinates) > 0 else None
+    latitude = coordinates[1] if coordinates and len(coordinates) > 1 else None
+
+    observations.append({
+        "id": item.get("id"),
+        "observedOn": item.get("observed_on"),
+        "createdAt": item.get("created_at"),
+        "uri": item.get("uri"),
+        "placeGuess": item.get("place_guess"),
+        "latitude": latitude,
+        "longitude": longitude,
+        "photoUrl": photo_url,
+        "taxon": {
+            "id": taxon.get("id"),
+            "name": taxon.get("name"),
+            "preferredCommonName": taxon.get("preferred_common_name"),
+            "rank": taxon.get("rank"),
+            "iconicTaxonName": taxon.get("iconic_taxon_name")
+        }
+    })
 
 output = {
     "source": "iNaturalist API",
