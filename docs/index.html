@@ -350,6 +350,29 @@
   <p class="muted">Track discovered species, confirmed sightings, and field progress.</p>
 </div>
     </section>
+
+
+    <div class="panel">
+  <h2>Data Network Status</h2>
+  <p class="muted">Automated biodiversity sync health.</p>
+
+  <div class="species-list">
+    <div class="list-item">
+      <span>Last Sync</span>
+      <strong id="lastSync">Loading...</strong>
+    </div>
+
+    <div class="list-item">
+      <span>Status</span>
+      <strong id="syncStatus">Loading...</strong>
+    </div>
+
+    <div class="list-item">
+      <span>Source</span>
+      <strong>GitHub Actions</strong>
+    </div>
+  </div>
+</div>
   </main>
 
   <footer>
@@ -368,6 +391,24 @@
     speciesData = await speciesResponse.json();
     encounterData = await encounterResponse.json();
   }
+
+  async function renderSyncStatus() {
+  try {
+    const response = await fetch("./data/sync-status.json");
+    const sync = await response.json();
+
+    document.getElementById("lastSync").textContent =
+      new Date(sync.lastSync).toLocaleString();
+
+    document.getElementById("syncStatus").textContent =
+      sync.status || "unknown";
+  } catch (error) {
+    document.getElementById("lastSync").textContent = "Not available";
+    document.getElementById("syncStatus").textContent = "offline";
+  }
+}
+
+  
 </script>
   <script>
   function renderEncounters() {
@@ -410,12 +451,15 @@
 
 loadData().then(() => {
   renderEncounters();
+  renderSyncStatus();
 });
     alert("Mock scan complete: Yarrow added.");
   }
 
 loadData().then(() => {
   renderEncounters();
+  renderSyncStatus();
+});
 });</script>
 </body>
 </html>
