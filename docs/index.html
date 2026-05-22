@@ -355,8 +355,21 @@
   <footer>
     SpriteDex · Project Sprite / AetherOS ecosystem
   </footer>
-<script src="data.js"></script>
 <script>
+  let speciesData = [];
+  let encounterData = [];
+
+  async function loadData() {
+    const [speciesResponse, encounterResponse] = await Promise.all([
+      fetch("./data/species.json"),
+      fetch("./data/encounters.json")
+    ]);
+
+    speciesData = await speciesResponse.json();
+    encounterData = await encounterResponse.json();
+  }
+</script>
+  <script>
   function renderEncounters() {
     const container = document.getElementById("encounters");
 
@@ -395,12 +408,14 @@
 
     encounterData.unshift(newEncounter);
 
-    renderEncounters();
-
+loadData().then(() => {
+  renderEncounters();
+});
     alert("Mock scan complete: Yarrow added.");
   }
 
+loadData().then(() => {
   renderEncounters();
-</script>
+});</script>
 </body>
 </html>
