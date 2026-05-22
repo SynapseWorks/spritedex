@@ -34,22 +34,31 @@ observations = []
 for item in payload.get("results", []):
     taxon = item.get("taxon") or {}
 
-    observations.append({
-        "id": item.get("id"),
-        "observedOn": item.get("observed_on"),
-        "createdAt": item.get("created_at"),
-        "uri": item.get("uri"),
-        "placeGuess": item.get("place_guess"),
-        "latitude": item.get("geojson", {}).get("coordinates", [None, None])[1] if item.get("geojson") else None,
-        "longitude": item.get("geojson", {}).get("coordinates", [None, None])[0] if item.get("geojson") else None,
-        "taxon": {
-            "id": taxon.get("id"),
-            "name": taxon.get("name"),
-            "preferredCommonName": taxon.get("preferred_common_name"),
-            "rank": taxon.get("rank"),
-            "iconicTaxonName": taxon.get("iconic_taxon_name")
-        }
-    })
+    photos = item.get("photos") or []
+photo_url = None
+
+if photos:
+    photo_url = photos[0].get("url")
+    if photo_url:
+        photo_url = photo_url.replace("square", "medium")
+
+observations.append({
+    "id": item.get("id"),
+    "observedOn": item.get("observed_on"),
+    "createdAt": item.get("created_at"),
+    "uri": item.get("uri"),
+    "placeGuess": item.get("place_guess"),
+    "latitude": item.get("geojson", {}).get("coordinates", [None, None])[1] if item.get("geojson") else None,
+    "longitude": item.get("geojson", {}).get("coordinates", [None, None])[0] if item.get("geojson") else None,
+    "photoUrl": photo_url,
+    "taxon": {
+        "id": taxon.get("id"),
+        "name": taxon.get("name"),
+        "preferredCommonName": taxon.get("preferred_common_name"),
+        "rank": taxon.get("rank"),
+        "iconicTaxonName": taxon.get("iconic_taxon_name")
+    }
+})
 
 output = {
     "source": "iNaturalist API",
