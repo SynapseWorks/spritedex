@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ecological Map | SpriteDex</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     :root {
       --bg: #071510;
@@ -57,6 +65,31 @@
 
     .muted { color: var(--muted); }
 
+    .app-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .app-nav a {
+      border: 1px solid var(--border);
+      background: rgba(124, 255, 196, 0.08);
+      color: var(--text);
+      padding: 10px 13px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .app-nav a.active {
+      background: var(--accent);
+      color: #062015;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(124,255,196,0.35);
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 1.4fr 0.6fr;
@@ -64,54 +97,13 @@
       margin-top: 28px;
     }
 
-    .map {
+    #leafletMap {
       min-height: 560px;
       border-radius: 28px;
       border: 1px solid var(--border);
-      background:
-        linear-gradient(rgba(124,255,196,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,255,196,0.04) 1px, transparent 1px),
-        radial-gradient(circle at 35% 35%, rgba(124, 255, 196, 0.18), transparent 18%),
-        radial-gradient(circle at 70% 65%, rgba(242, 184, 75, 0.14), transparent 16%),
-        rgba(255,255,255,0.035);
-      background-size: 32px 32px, 32px 32px, auto, auto, auto;
-      position: relative;
       overflow: hidden;
       box-shadow: 0 20px 80px rgba(0,0,0,0.28);
-    }
-
-    .pin {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 24px rgba(124,255,196,0.8);
-      border: 2px solid rgba(6, 32, 21, 0.9);
-      cursor: pointer;
-    }
-
-    .pin::after {
-      content: attr(data-label);
-      position: absolute;
-      left: 24px;
-      top: -8px;
-      white-space: nowrap;
-      background: rgba(7, 21, 16, 0.88);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      opacity: 0;
-      transform: translateY(4px);
-      transition: 0.2s ease;
-      pointer-events: none;
-    }
-
-    .pin:hover::after {
-      opacity: 1;
-      transform: translateY(0);
+      background: rgba(255,255,255,0.035);
     }
 
     .panel {
@@ -125,6 +117,9 @@
       display: grid;
       gap: 12px;
       margin-top: 16px;
+      max-height: 560px;
+      overflow: auto;
+      padding-right: 4px;
     }
 
     .item {
@@ -135,10 +130,29 @@
       cursor: pointer;
     }
 
+    .item:hover {
+      border-color: var(--accent);
+    }
+
     .tag {
       color: var(--amber);
       font-size: 0.85rem;
       margin-top: 4px;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: #071510;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .popup-image {
+      width: 180px;
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
     }
 
     @media (max-width: 850px) {
@@ -153,37 +167,10 @@
         grid-template-columns: 1fr;
       }
 
-      .map {
+      #leafletMap {
         min-height: 420px;
       }
     }
-    .app-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.app-nav a {
-  border: 1px solid var(--border);
-  background: rgba(124, 255, 196, 0.08);
-  color: var(--text);
-  padding: 10px 13px;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.app-nav a:hover {
-  background: rgba(124, 255, 196, 0.18);
-}
-    .app-nav a.active {
-  background: var(--accent);
-  color: #062015;
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(124,255,196,0.35);
-}
   </style>
 </head>
 
@@ -191,92 +178,143 @@
   <header>
     <nav>
       <a href="index.html">← SpriteDex Dashboard</a>
-      <span class="muted">Map Prototype</span>
+      <span class="muted">Live Observation Map</span>
     </nav>
 
     <h1>Ecological Map</h1>
     <p class="muted">
-      A prototype map of your encounters. Later this becomes Leaflet / MapLibre + PostGIS.
+      Recent Ontario iNaturalist observations displayed as a live prototype map layer.
     </p>
+
     <div class="app-nav">
-  <a href="index.html">Dashboard</a>
-  <a href="scanner.html">Scanner</a>
-  <a href="species.html">SpeciesDex</a>
-  <a href="encounters.html">Encounters</a>
-  <a href="map.html" class="active">Map</a>
+      <a href="index.html">Dashboard</a>
+      <a href="scanner.html">Scanner</a>
+      <a href="species.html">SpeciesDex</a>
+      <a href="encounters.html">Encounters</a>
+      <a href="map.html" class="active">Map</a>
       <a href="collection.html">Collection</a>
-</div>
+    </div>
   </header>
 
   <main>
     <section class="layout">
-      <div class="map" id="map"></div>
+      <div id="leafletMap"></div>
 
       <aside class="panel">
-        <h2>Encounter Points</h2>
-        <p class="muted">Mock locations for the current prototype.</p>
-        <div class="list" id="mapList"></div>
+        <h2>Observation Points</h2>
+        <p class="muted">Pulled from your generated iNaturalist JSON feed.</p>
+        <div class="list" id="mapList">
+          <div class="item">Loading map observations...</div>
+        </div>
       </aside>
     </section>
   </main>
 
-<script>
-  let speciesData = [];
-  let encounterData = [];
-
-  async function loadData() {
-    const [speciesResponse, encounterResponse] = await Promise.all([
-      fetch("./data/species.json"),
-      fetch("./data/encounters.json")
-    ]);
-
-    speciesData = await speciesResponse.json();
-    encounterData = await encounterResponse.json();
-  }
-</script>
   <script>
-    const mockMapPositions = [
-      { encounterId: 1, x: 34, y: 42 },
-      { encounterId: 2, x: 62, y: 28 },
-      { encounterId: 3, x: 48, y: 68 }
-    ];
+    let map;
+    const markers = [];
 
-    function renderMap() {
-      const map = document.getElementById("map");
-      const list = document.getElementById("mapList");
-
-      map.innerHTML = "";
-      list.innerHTML = "";
-
-      mockMapPositions.forEach(position => {
-        const encounter = encounterData.find(item => item.id === position.encounterId);
-        if (!encounter) return;
-
-        const pin = document.createElement("div");
-        pin.className = "pin";
-        pin.style.left = `${position.x}%`;
-        pin.style.top = `${position.y}%`;
-        pin.dataset.label = encounter.name;
-
-        map.appendChild(pin);
-
-        const item = document.createElement("div");
-        item.className = "item";
-        item.innerHTML = `
-          <strong>${encounter.name}</strong>
-          <div class="tag">${encounter.category} · ${encounter.location}</div>
-        `;
-
-        item.addEventListener("click", () => {
-          alert(`${encounter.name}\n${encounter.location}\n${encounter.date}`);
-        });
-
-        list.appendChild(item);
-      });
+    async function loadJson(path) {
+      const response = await fetch(path + "?v=" + Date.now());
+      if (!response.ok) throw new Error(path + " not found");
+      return response.json();
     }
 
-loadData().then(() => {
-  renderMap();
-});  </script>
+    function getObservationName(observation) {
+      const taxon = observation.taxon || {};
+      return taxon.preferredCommonName || taxon.name || "Unknown taxon";
+    }
+
+    function makePopup(observation) {
+      const taxon = observation.taxon || {};
+      const name = getObservationName(observation);
+
+      const imageHtml = observation.photoUrl
+        ? `<img class="popup-image" src="${observation.photoUrl}" alt="${name}">`
+        : "";
+
+      const linkHtml = observation.uri
+        ? `<br><a href="${observation.uri}" target="_blank" rel="noopener">Open iNaturalist record</a>`
+        : "";
+
+      return `
+        <strong>${name}</strong><br>
+        <em>${taxon.name || ""}</em><br>
+        ${observation.placeGuess || ""}
+        ${imageHtml}
+        ${linkHtml}
+      `;
+    }
+
+    function initializeMap() {
+      map = L.map("leafletMap").setView([44.0, -78.6], 7);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+    }
+
+    async function renderLeafletMap() {
+      const list = document.getElementById("mapList");
+
+      try {
+        const data = await loadJson("./data/inat-ontario-observations.json");
+        const observations = data.observations || [];
+
+        initializeMap();
+        list.innerHTML = "";
+
+        const validObservations = observations.filter(obs =>
+          Number.isFinite(Number(obs.latitude)) &&
+          Number.isFinite(Number(obs.longitude))
+        );
+
+        if (!validObservations.length) {
+          list.innerHTML = `<div class="item">No mappable observations found.</div>`;
+          return;
+        }
+
+        const bounds = [];
+
+        validObservations.forEach((observation, index) => {
+          const lat = Number(observation.latitude);
+          const lng = Number(observation.longitude);
+          const name = getObservationName(observation);
+          const taxon = observation.taxon || {};
+
+          const marker = L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(makePopup(observation));
+
+          markers.push(marker);
+          bounds.push([lat, lng]);
+
+          const item = document.createElement("div");
+          item.className = "item";
+          item.innerHTML = `
+            <strong>${name}</strong>
+            <div class="tag">${taxon.iconicTaxonName || "Observation"} · ${observation.placeGuess || "Ontario"}</div>
+          `;
+
+          item.addEventListener("click", () => {
+            map.setView([lat, lng], 11);
+            marker.openPopup();
+          });
+
+          list.appendChild(item);
+        });
+
+        map.fitBounds(bounds, { padding: [30, 30] });
+      } catch (error) {
+        console.error("Map feed failed:", error);
+        list.innerHTML = `<div class="item">Could not load iNaturalist observation map data.</div>`;
+
+        initializeMap();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", renderLeafletMap);
+  </script>
 </body>
 </html>
