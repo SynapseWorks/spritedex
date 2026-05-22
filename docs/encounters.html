@@ -194,8 +194,20 @@
     <section class="journal" id="journal"></section>
   </main>
 
-  <script src="data.js"></script>
+<script>
+  let speciesData = [];
+  let encounterData = [];
 
+  async function loadData() {
+    const [speciesResponse, encounterResponse] = await Promise.all([
+      fetch("./data/species.json"),
+      fetch("./data/encounters.json")
+    ]);
+
+    speciesData = await speciesResponse.json();
+    encounterData = await encounterResponse.json();
+  }
+</script>
   <script>
     function renderJournal() {
       const journal = document.getElementById("journal");
@@ -236,7 +248,9 @@
       renderJournal();
     }
 
-    renderJournal();
+loadData().then(() => {
+  renderJournal();
+});
   </script>
 </body>
 </html>
