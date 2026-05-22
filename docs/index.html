@@ -532,56 +532,131 @@ document.getElementById("lastSync").textContent =
     renderInatFeed();
   });
 </script>
-  <script>
+<script>
+  let speciesData = [];
+  let encounterData = [];
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function setHTML(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = value;
+  }
+
+  async function loadJson(path) {
+    const response = await fetch(path + "?v=" + Date.now());
+    if (!response.ok) throw new Error(path + " not found");
+    return response.json();
+  }
+
+  async function loadLocalData() {
+    try {
+      speciesData = await loadJson("./data/species.json");
+      encounterData = await loadJson("./data/encounters.json");
+
+      renderFieldStatus();
+      renderEncounters();
+    } catch (error) {
+      console.error("Local data failed:", error);
+      setText("knownSpeciesCount", "Unavailable");
+      setText("encounterCount", "Unavailable");
+      setText("confirmedCount", "Unavailable");
+      setHTML("encounters", `<div class="list-item"><span>Could not load local SpriteDex data.</span></div>`);
+    }
+  }
+
+  function renderFieldStatus() {
+    const confirmed = encounterData.filter(e =>
+      String(e.confidence || "").toLowerCase().includes("confirmed") ||
+      String(e.confidence || "").toLowerCase().includes("high")
+    ).length;
+
+    setText("knownSpeciesCount", speciesData.length);
+    setText("encounterCount", encounterData.length);
+    setText("confirmedCount", confirmed);
+  }
+
   function renderEncounters() {
     const container = document.getElementById("encounters");
+    if (!container) return;
 
     container.innerHTML = "";
 
-    encounterData.forEach(encounter => {
+    encounterData.slice(0, 5).forEach(encounter => {
       const item = document.createElement("div");
-
       item.className = "list-item";
-
       item.innerHTML = `
         <div>
           <strong>${encounter.name}</strong>
           <div class="muted">${encounter.location}</div>
         </div>
-
-        <span class="tag">
-          ${encounter.category} · ${encounter.confidence}
-        </span>
+        <span class="tag">${encounter.category} · ${encounter.confidence}</span>
       `;
-
       container.appendChild(item);
     });
   }
 
-  function mockScan() {
-    const newEncounter = {
-      id: Date.now(),
-      speciesId: 2,
-      name: "Yarrow",
-      category: "Plant",
-      confidence: "AI candidate",
-      location: "Field edge",
-      date: new Date().toISOString().split("T")[0]
-    };
+  async function renderSyncStatus() {
+    try {
+      const sync = await loadJson("./data/sync-status.json");
 
-    encounterData.unshift(newEncounter);
+      setText(
+        "lastSync",
+        sync.lastSync
+          ? sync.lastSync.replace("T", " ").replace("+00:00", " UTC")
+          : "Unknown"
+      );
 
-loadData().then(() => {
-  renderEncounters();
-  renderSyncStatus();
-});
-    alert("Mock scan complete: Yarrow added.");
+      setText("syncStatus", sync.status || "unknown");
+      setText("syncSource", sync.source || "GitHub Actions");
+    } catch (error) {
+      console.error("Sync status failed:", error);
+      setText("lastSync", "Not available");
+      setText("syncStatus", "offline");
+      setText("syncSource", "No sync file");
+    }
   }
 
-loadData().then(() => {
-  renderEncounters();
-  renderSyncStatus();
-});
-});</script>
+  async function renderInatFeed() {
+    try {
+      const data = await loadJson("./data/inat-ontario-observations.json");
+      const observations = data.observations || [];
+
+      if (!observations.length) {
+        setHTML("inatFeed", `<div class="list-item"><span>No observations found yet.</span></div>`);
+        return;
+      }
+
+      const html = observations.slice(0, 5).map(observation => {
+        const taxon = observation.taxon || {};
+        const commonName = taxon.preferredCommonName || taxon.name || "Unknown taxon";
+
+        return `
+          <div class="list-item">
+            <div>
+              <strong>${commonName}</strong>
+              <div class="muted"><em>${taxon.name || ""}</em></div>
+            </div>
+            <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+          </div>
+        `;
+      }).join("");
+
+      setHTML("inatFeed", html);
+    } catch (error) {
+      console.error("iNaturalist feed failed:", error);
+      setHTML("inatFeed", `<div class="list-item"><span>iNaturalist feed unavailable</span></div>`);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadLocalData();
+    renderSyncStatus();
+    renderInatFeed();
+  });
+</script>
 </body>
 </html>
