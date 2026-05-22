@@ -382,33 +382,155 @@
   let speciesData = [];
   let encounterData = [];
 
-  async function loadData() {
-    const [speciesResponse, encounterResponse] = await Promise.all([
-      fetch("./data/species.json"),
-      fetch("./data/encounters.json")
-    ]);
+  async function loadLocalData() {
+    try {
+      const [speciesResponse, encounterResponse] = await Promise.all([
+        fetch("./data/species.json"),
+        fetch("./data/encounters.json")
+      ]);
 
-    speciesData = await speciesResponse.json();
-    encounterData = await encounterResponse.json();
+      if (!speciesResponse.ok) throw new Error("species.json missing");
+      if (!encounterResponse.ok) throw new Error("encounters.json missing");
+
+      speciesData = await speciesResponse.json();
+      encounterData = await encounterResponse.json();
+
+      renderFieldStatus();
+      renderEncounters();
+    } catch (error) {
+      console.error("Local data failed:", error);
+
+      document.getElementById("knownSpeciesCount").textContent = "Unavailable";
+      document.getElementById("encounterCount").textContent = "Unavailable";
+      document.getElementById("confirmedCount").textContent = "Unavailable";
+
+      document.getElementById("encounters").innerHTML = `
+        <div class="list-item">
+          <span>Could not load local SpriteDex data.</span>
+        </div>
+      `;
+    }
+  }
+
+  function renderFieldStatus() {
+    const confirmed = encounterData.filter(encounter =>
+      encounter.confidence.toLowerCase().includes("confirmed") ||
+      encounter.confidence.toLowerCase().includes("high")
+    ).length;
+
+    document.getElementById("knownSpeciesCount").textContent = speciesData.length;
+    document.getElementById("encounterCount").textContent = encounterData.length;
+    document.getElementById("confirmedCount").textContent = confirmed;
+  }
+
+  function renderEncounters() {
+    const container = document.getElementById("encounters");
+    container.innerHTML = "";
+
+    encounterData.slice(0, 5).forEach(encounter => {
+      const item = document.createElement("div");
+      item.className = "list-item";
+
+      item.innerHTML = `
+        <div>
+          <strong>${encounter.name}</strong>
+          <div class="muted">${encounter.location}</div>
+        </div>
+
+        <span class="tag">
+          ${encounter.category} · ${encounter.confidence}
+        </span>
+      `;
+
+      container.appendChild(item);
+    });
   }
 
   async function renderSyncStatus() {
-  try {
-    const response = await fetch("./data/sync-status.json");
-    const sync = await response.json();
+    try {
+      const response = await fetch("./data/sync-status.json?cacheBust=" + Date.now());
 
-    document.getElementById("lastSync").textContent =
-      new Date(sync.lastSync).toLocaleString();
+      if (!response.ok) {
+        throw new Error("sync-status.json missing");
+      }
 
-    document.getElementById("syncStatus").textContent =
-      sync.status || "unknown";
-  } catch (error) {
-    document.getElementById("lastSync").textContent = "Not available";
-    document.getElementById("syncStatus").textContent = "offline";
+      const sync = await response.json();
+
+      document.getElementById("lastSync").textContent =
+        sync.lastSync ? new Date(sync.lastSync).toLocaleString() : "Unknown";
+
+      document.getElementById("syncStatus").textContent =
+        sync.status || "unknown";
+
+      document.getElementById("syncSource").textContent =
+        sync.source || "GitHub Actions";
+    } catch (error) {
+      console.error("Sync status failed:", error);
+
+      document.getElementById("lastSync").textContent = "Not available";
+      document.getElementById("syncStatus").textContent = "offline";
+      document.getElementById("syncSource").textContent = "No sync file";
+    }
   }
-}
 
-  
+  async function renderInatFeed() {
+    const container = document.getElementById("inatFeed");
+
+    try {
+      const response = await fetch("./data/inat-ontario-observations.json?cacheBust=" + Date.now());
+
+      if (!response.ok) {
+        throw new Error("inat-ontario-observations.json missing");
+      }
+
+      const data = await response.json();
+      container.innerHTML = "";
+
+      if (!data.observations || data.observations.length === 0) {
+        container.innerHTML = `
+          <div class="list-item">
+            <span>No observations found yet.</span>
+          </div>
+        `;
+        return;
+      }
+
+      data.observations.slice(0, 5).forEach(observation => {
+        const item = document.createElement("div");
+        item.className = "list-item";
+
+        const taxon = observation.taxon || {};
+        const commonName =
+          taxon.preferredCommonName ||
+          taxon.name ||
+          "Unknown taxon";
+
+        item.innerHTML = `
+          <div>
+            <strong>${commonName}</strong>
+            <div class="muted"><em>${taxon.name || ""}</em></div>
+          </div>
+          <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+        `;
+
+        container.appendChild(item);
+      });
+    } catch (error) {
+      console.error("iNaturalist feed failed:", error);
+
+      container.innerHTML = `
+        <div class="list-item">
+          <span>iNaturalist feed unavailable</span>
+        </div>
+      `;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadLocalData();
+    renderSyncStatus();
+    renderInatFeed();
+  });
 </script>
   <script>
   function renderEncounters() {
