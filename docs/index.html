@@ -456,8 +456,8 @@
 
       const sync = await response.json();
 
-      document.getElementById("lastSync").textContent =
-        sync.lastSync ? new Date(sync.lastSync).toLocaleString() : "Unknown";
+document.getElementById("lastSync").textContent =
+  sync.lastSync ? sync.lastSync.replace("T", " ").replace("+00:00", " UTC") : "Unknown";
 
       document.getElementById("syncStatus").textContent =
         sync.status || "unknown";
