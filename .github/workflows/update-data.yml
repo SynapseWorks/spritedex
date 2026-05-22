@@ -16,13 +16,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Update sync status file
-        run: |
-          mkdir -p docs/data
-          echo "{\"lastSync\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",\"status\":\"success\"}" > docs/data/sync-status.json
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch iNaturalist starter data
+        run: python scripts/fetch_inat_observations.py
 
       - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update SpriteDex sync status"
-          file_pattern: docs/data/sync-status.json
+          commit_message: "Update SpriteDex iNaturalist data"
+          file_pattern: docs/data/*.json
