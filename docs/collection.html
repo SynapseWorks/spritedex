@@ -189,8 +189,20 @@
     <section class="collection-grid" id="collectionGrid"></section>
   </main>
 
-  <script src="data.js"></script>
+<script>
+  let speciesData = [];
+  let encounterData = [];
 
+  async function loadData() {
+    const [speciesResponse, encounterResponse] = await Promise.all([
+      fetch("./data/species.json"),
+      fetch("./data/encounters.json")
+    ]);
+
+    speciesData = await speciesResponse.json();
+    encounterData = await encounterResponse.json();
+  }
+</script>
   <script>
     function getEncounterCountForSpecies(speciesId) {
       return encounterData.filter(encounter => encounter.speciesId === speciesId).length;
@@ -228,8 +240,10 @@
       });
     }
 
-    renderStats();
-    renderCollection();
+    loadData().then(() => {
+      renderStats();
+      renderCollection();
+    });
   </script>
 </body>
 </html>
