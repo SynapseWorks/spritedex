@@ -198,6 +198,20 @@
       header, main { padding: 18px; }
       .list-item { flex-direction: column; }
     }
+    .inat-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.inat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
   </style>
 </head>
 
@@ -412,16 +426,22 @@
         const html = observations.slice(0, 5).map(observation => {
           const taxon = observation.taxon || {};
           const commonName = taxon.preferredCommonName || taxon.name || "Unknown taxon";
+const imageHtml = observation.photoUrl
+  ? `<img class="inat-thumb" src="${observation.photoUrl}" alt="${commonName}">`
+  : "";
 
-          return `
-            <div class="list-item">
-              <div>
-                <strong>${commonName}</strong>
-                <div class="muted"><em>${taxon.name || ""}</em></div>
-              </div>
-              <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
-            </div>
-          `;
+return `
+  <div class="list-item">
+    <div class="inat-row">
+      ${imageHtml}
+      <div>
+        <strong>${commonName}</strong>
+        <div class="muted"><em>${taxon.name || ""}</em></div>
+      </div>
+    </div>
+    <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+  </div>
+`;
         }).join("");
 
         setHTML("inatFeed", html);
