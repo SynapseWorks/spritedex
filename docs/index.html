@@ -116,6 +116,12 @@
     .card {
       background: var(--panel-2);
       cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
     }
 
     .grid {
@@ -161,6 +167,7 @@
     .list-item {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 12px;
       padding: 14px;
       border-radius: 16px;
@@ -184,6 +191,26 @@
       text-align: center;
       padding: 24px;
       cursor: pointer;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(124,255,196,0.16), transparent 20%),
+        radial-gradient(circle at 70% 60%, rgba(242,184,75,0.12), transparent 18%),
+        rgba(255,255,255,0.035);
+    }
+
+    .inat-thumb {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .inat-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     footer {
@@ -196,22 +223,8 @@
       .hero, .grid { grid-template-columns: 1fr; }
       .brand { flex-direction: column; align-items: flex-start; }
       header, main { padding: 18px; }
-      .list-item { flex-direction: column; }
+      .list-item { flex-direction: column; align-items: flex-start; }
     }
-    .inat-thumb {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
-  object-fit: cover;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.inat-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
   </style>
 </head>
 
@@ -295,7 +308,7 @@
         <h2>Local Map</h2>
         <div class="map-placeholder" onclick="window.location.href='map.html'">
           Open Ecological Map<br />
-          Future: Leaflet / MapLibre + PostGIS encounter points
+          Live iNaturalist observation points
         </div>
       </div>
     </section>
@@ -426,22 +439,23 @@
         const html = observations.slice(0, 5).map(observation => {
           const taxon = observation.taxon || {};
           const commonName = taxon.preferredCommonName || taxon.name || "Unknown taxon";
-const imageHtml = observation.photoUrl
-  ? `<img class="inat-thumb" src="${observation.photoUrl}" alt="${commonName}">`
-  : "";
 
-return `
-  <div class="list-item">
-    <div class="inat-row">
-      ${imageHtml}
-      <div>
-        <strong>${commonName}</strong>
-        <div class="muted"><em>${taxon.name || ""}</em></div>
-      </div>
-    </div>
-    <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
-  </div>
-`;
+          const imageHtml = observation.photoUrl
+            ? `<img class="inat-thumb" src="${observation.photoUrl}" alt="${commonName}">`
+            : `<div class="inat-thumb"></div>`;
+
+          return `
+            <div class="list-item">
+              <div class="inat-row">
+                ${imageHtml}
+                <div>
+                  <strong>${commonName}</strong>
+                  <div class="muted"><em>${taxon.name || ""}</em></div>
+                </div>
+              </div>
+              <span class="tag">${taxon.iconicTaxonName || "Observation"}</span>
+            </div>
+          `;
         }).join("");
 
         setHTML("inatFeed", html);
