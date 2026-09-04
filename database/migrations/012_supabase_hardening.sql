@@ -26,10 +26,12 @@ DECLARE
     r RECORD;
 BEGIN
     FOR r IN
-        SELECT sequence_name
-        FROM information_schema.sequences
-        WHERE sequence_schema = 'public'
-          AND sequence_owner = current_user
+        SELECT c.relname AS sequence_name
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public'
+          AND c.relkind = 'S'
+          AND pg_get_userbyid(c.relowner) = current_user
     LOOP
         EXECUTE format('REVOKE ALL ON SEQUENCE public.%I FROM anon, authenticated', r.sequence_name);
     END LOOP;
