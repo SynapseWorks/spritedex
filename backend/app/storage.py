@@ -4,7 +4,9 @@ import os
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import quote
 
+import httpx
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pillow_heif import register_heif_opener
 
@@ -64,6 +66,9 @@ class LocalMediaStorage:
             original_filename=original_filename,
         )
 
+    def read(self, storage_key: str) -> bytes:
+        return self._path(storage_key).read_bytes()
+
     def path_for(self, storage_key: str) -> Path:
         return self._path(storage_key)
 
@@ -71,6 +76,96 @@ class LocalMediaStorage:
         try:
             self._path(storage_key).unlink(missing_ok=True)
         except OSError:
+            pass
+
+
+class SupabaseMediaStorage:
+    """Private server-side Supabase Storage adapter.
+
+    SpriteDex performs authorization in FastAPI and uses a server-only service-role
+    credential for object operations. The credential must never be exposed to the
+    React client. The bucket remains private.
+    """
+
+    provider = "supabase"
+
+    def __init__(self) -> None:
+        self.base_url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+        self.service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        self.bucket = os.getenv("SPRITEDEX_MEDIA_BUCKET", "encounter-media").strip()
+        if not self.base_url or not self.service_key or not self.bucket:
+            raise RuntimeError(
+                "Supabase media storage requires SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, "
+                "and SPRITEDEX_MEDIA_BUCKET"
+            )
+
+    def _headers(self, content_type: str | None = None) -> dict[str, str]:
+        # Supabase's legacy service-role JWT is intentionally server-only. Sending it
+        # in Authorization bypasses Storage RLS for this trusted backend; apikey is
+        # included for gateway compatibility.
+        headers = {
+            "Authorization": f"Bearer {self.service_key}",
+            "apikey": self.service_key,
+        }
+        if content_type:
+            headers["Content-Type"] = content_type
+        return headers
+
+    def _encoded(self, storage_key: str) -> str:
+        return quote(storage_key, safe="/")
+
+    def save(
+        self,
+        *,
+        data: bytes,
+        user_id: int,
+        encounter_id: int,
+        extension: str,
+        content_type: str,
+        original_filename: str | None,
+    ) -> StoredImage:
+        digest = hashlib.sha256(data).hexdigest()
+        key = f"users/{user_id}/encounters/{encounter_id}/{uuid.uuid4().hex}.{extension}"
+        url = f"{self.base_url}/storage/v1/object/{quote(self.bucket, safe='')}/{self._encoded(key)}"
+        response = httpx.post(
+            url,
+            content=data,
+            headers={**self._headers(content_type), "x-upsert": "false"},
+            timeout=45,
+        )
+        response.raise_for_status()
+        return StoredImage(
+            storage_provider=self.provider,
+            storage_key=key,
+            content_type=content_type,
+            size_bytes=len(data),
+            sha256=digest,
+            original_filename=original_filename,
+        )
+
+    def read(self, storage_key: str) -> bytes:
+        url = (
+            f"{self.base_url}/storage/v1/object/authenticated/"
+            f"{quote(self.bucket, safe='')}/{self._encoded(storage_key)}"
+        )
+        response = httpx.get(url, headers=self._headers(), timeout=45)
+        response.raise_for_status()
+        return response.content
+
+    def delete(self, storage_key: str) -> None:
+        url = f"{self.base_url}/storage/v1/object/{quote(self.bucket, safe='')}"
+        try:
+            response = httpx.request(
+                "DELETE",
+                url,
+                json={"prefixes": [storage_key]},
+                headers={**self._headers("application/json")},
+                timeout=30,
+            )
+            response.raise_for_status()
+        except httpx.HTTPError:
+            # Cleanup is best-effort when a DB insert fails after the object upload.
+            # The primary request will still fail and operations logs retain context.
             pass
 
 
@@ -111,5 +206,10 @@ def normalize_image(data: bytes) -> tuple[bytes, str, str]:
     return data, "jpg", "image/jpeg"
 
 
-def get_media_storage() -> LocalMediaStorage:
-    return LocalMediaStorage()
+def get_media_storage():
+    provider = os.getenv("SPRITEDEX_MEDIA_PROVIDER", "local").strip().lower()
+    if provider == "local":
+        return LocalMediaStorage()
+    if provider == "supabase":
+        return SupabaseMediaStorage()
+    raise RuntimeError(f"Unsupported SPRITEDEX_MEDIA_PROVIDER: {provider}")
