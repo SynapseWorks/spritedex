@@ -1,0 +1,52 @@
+name: Database CI
+
+on:
+  pull_request:
+    paths:
+      - "database/**"
+      - "scripts/validate_database.sh"
+      - "docker-compose.dev.yml"
+      - ".github/workflows/database-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "database/**"
+      - "scripts/validate_database.sh"
+      - "docker-compose.dev.yml"
+      - ".github/workflows/database-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-database:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: spritedex
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d spritedex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/spritedex
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Validate schema, migrations and smoke tests
+        run: bash scripts/validate_database.sh
