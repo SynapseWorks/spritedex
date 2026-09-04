@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: spritedex
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spritedex"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - spritedex_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  spritedex_postgres_data:
