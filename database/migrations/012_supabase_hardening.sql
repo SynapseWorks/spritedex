@@ -34,22 +34,21 @@ BEGIN
 END;
 $$;
 
--- PostgreSQL grants EXECUTE on new functions to PUBLIC by default. SpriteDex's
--- spatial/game-state functions are internal server operations, not public RPCs.
-DO $$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN
-        SELECT p.oid::regprocedure AS signature
-        FROM pg_proc p
-        JOIN pg_namespace n ON n.oid = p.pronamespace
-        WHERE n.nspname = 'public'
-          AND p.prokind = 'f'
-    LOOP
-        EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC, anon, authenticated', r.signature);
-    END LOOP;
-END;
-$$;
+-- PostgreSQL grants EXECUTE on new functions to PUBLIC by default. These are
+-- SpriteDex-internal server operations rather than Supabase RPC endpoints.
+REVOKE EXECUTE ON FUNCTION public.refresh_user_region_progress(BIGINT)
+FROM PUBLIC, anon, authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.process_encounter_regions(INT)
+FROM PUBLIC, anon, authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.refresh_external_observation_regions(BIGINT)
+FROM PUBLIC, anon, authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.calculate_region_encounter_tiers(BIGINT, DATE, INT)
+FROM PUBLIC, anon, authenticated;
+
+REVOKE EXECUTE ON FUNCTION public.refresh_region_game_state(BIGINT)
+FROM PUBLIC, anon, authenticated;
 
 COMMIT;
