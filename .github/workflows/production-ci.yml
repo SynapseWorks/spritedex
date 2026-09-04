@@ -1,0 +1,72 @@
+name: Production CI
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "render.yaml"
+      - "backend/**"
+      - "frontend/**"
+      - "database/**"
+      - "scripts/migrate_production.sh"
+      - "scripts/start_production.sh"
+      - "scripts/backup_database.sh"
+      - "scripts/restore_database.sh"
+      - ".github/workflows/production-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  production-readiness:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: spritedex
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d spritedex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/spritedex
+      SPRITEDEX_BACKUP_PASSPHRASE: ci-only-not-a-production-secret
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run repeatable production migrations
+        run: |
+          bash scripts/migrate_production.sh
+          bash scripts/migrate_production.sh
+
+      - name: Seed restore sentinel
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c \
+            "INSERT INTO species (common_name, scientific_name, category) VALUES ('Backup Sentinel', 'Testus backupus', 'Test')"
+
+      - name: Create encrypted backup
+        run: bash scripts/backup_database.sh /tmp/spritedex-test.dump.enc
+
+      - name: Restore into a clean database
+        run: |
+          PGPASSWORD=postgres createdb -h localhost -U postgres spritedex_restore
+          TARGET_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/spritedex_restore \
+            bash scripts/restore_database.sh /tmp/spritedex-test.dump.enc
+          PGPASSWORD=postgres psql -h localhost -U postgres -d spritedex_restore -Atqc \
+            "SELECT COUNT(*) FROM species WHERE scientific_name = 'Testus backupus'" | grep -qx '1'
+
+      - name: Build production Docker image
+        run: docker build -t spritedex:v1 .

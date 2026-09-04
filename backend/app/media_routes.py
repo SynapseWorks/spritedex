@@ -1,7 +1,8 @@
 from typing import Annotated, Any
 
+import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from sqlalchemy import text
 
 from .auth import CurrentUser, get_current_user
@@ -44,15 +45,18 @@ async def save_encounter_photo(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    storage = get_media_storage()
-    stored = storage.save(
-        data=normalized,
-        user_id=user_id,
-        encounter_id=encounter_id,
-        extension=extension,
-        content_type=content_type,
-        original_filename=upload.filename,
-    )
+    try:
+        storage = get_media_storage()
+        stored = storage.save(
+            data=normalized,
+            user_id=user_id,
+            encounter_id=encounter_id,
+            extension=extension,
+            content_type=content_type,
+            original_filename=upload.filename,
+        )
+    except (RuntimeError, httpx.HTTPError, OSError) as exc:
+        raise HTTPException(status_code=503, detail="Encounter photo storage is temporarily unavailable") from exc
 
     try:
         with engine.begin() as connection:
@@ -142,7 +146,7 @@ def get_photo_file(
     encounter_id: int,
     media_id: int,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
-) -> FileResponse:
+) -> Response:
     with engine.connect() as connection:
         row = connection.execute(
             text(
@@ -164,15 +168,21 @@ def get_photo_file(
         ).first()
     if row is None:
         raise HTTPException(status_code=404, detail="Photo not found")
-    if row.storage_provider != "local":
-        raise HTTPException(status_code=501, detail="Configured media provider cannot be served locally")
 
-    storage = get_media_storage()
-    path = storage.path_for(row.file_path)
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="Photo file not found")
-    return FileResponse(
-        path,
+    try:
+        storage = get_media_storage(row.storage_provider)
+        payload = storage.read(row.file_path)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Photo file not found") from exc
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail="Photo file not found") from exc
+        raise HTTPException(status_code=503, detail="Photo storage is temporarily unavailable") from exc
+    except (httpx.HTTPError, RuntimeError, OSError) as exc:
+        raise HTTPException(status_code=503, detail="Photo storage is temporarily unavailable") from exc
+
+    return Response(
+        content=payload,
         media_type=row.content_type or "application/octet-stream",
-        filename=row.original_filename or path.name,
+        headers={"Cache-Control": "private, max-age=300"},
     )

@@ -11,12 +11,13 @@ from .field_routes import router as field_router
 from .inaturalist import encounter_sync_router, router as inaturalist_router
 from .media_routes import router as media_router
 from .oauth_redirect import InaturalistCallbackRedirectMiddleware
+from .production import configure_production
 from .species_routes import router as species_router
 from .taxon_routes import router as taxon_router
 
 app = FastAPI(
     title="SpriteDex API",
-    version="0.5.0",
+    version="0.6.0",
     description="V1 API for field encounters, Regional Dex discovery, media, authentication, and iNaturalist sync.",
 )
 app.add_middleware(InaturalistCallbackRedirectMiddleware)
@@ -162,3 +163,7 @@ def get_region_dex(
             {"region_id": region_id, "eligible_only": eligible_only},
         )
         return [_mapping(row) for row in rows]
+
+
+# Mount the built mobile client only after all API routes have been registered.
+configure_production(app)

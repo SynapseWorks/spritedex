@@ -77,6 +77,20 @@ def _ensure_observation_uuid(encounter_id: int, user_id: int, api_jwt: str) -> s
     return str(observation_uuid)
 
 
+def _mark_media_failed(media_id: int, message: str) -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                UPDATE encounter_media
+                SET inat_sync_status = 'failed', inat_sync_error = :error
+                WHERE media_id = :media_id
+                """
+            ),
+            {"error": message[:1000], "media_id": media_id},
+        )
+
+
 def sync_pending_photos(encounter_id: int, user_id: int) -> list[dict[str, Any]]:
     api_jwt = get_valid_inat_api_jwt(user_id)
     observation_uuid = _ensure_observation_uuid(encounter_id, user_id, api_jwt)
@@ -101,26 +115,21 @@ def sync_pending_photos(encounter_id: int, user_id: int) -> list[dict[str, Any]]
             )
         )
 
-    storage = get_media_storage()
     synced: list[dict[str, Any]] = []
     for row in rows:
-        if row.storage_provider != "local":
-            raise HTTPException(status_code=501, detail="Configured media provider cannot sync photos yet")
-        path = storage.path_for(row.file_path)
-        if not path.exists():
-            with engine.begin() as connection:
-                connection.execute(
-                    text(
-                        """
-                        UPDATE encounter_media
-                        SET inat_sync_status = 'failed',
-                            inat_sync_error = 'Stored photo file is missing'
-                        WHERE media_id = :media_id
-                        """
-                    ),
-                    {"media_id": row.media_id},
-                )
-            raise HTTPException(status_code=500, detail="Stored encounter photo is missing")
+        try:
+            storage = get_media_storage(row.storage_provider)
+            photo_bytes = storage.read(row.file_path)
+        except FileNotFoundError as exc:
+            _mark_media_failed(row.media_id, "Stored photo file is missing")
+            raise HTTPException(status_code=500, detail="Stored encounter photo is missing") from exc
+        except httpx.HTTPStatusError as exc:
+            message = "Stored photo is unavailable" if exc.response.status_code == 404 else "Photo storage request failed"
+            _mark_media_failed(row.media_id, message)
+            raise HTTPException(status_code=503, detail=message) from exc
+        except (httpx.HTTPError, RuntimeError, OSError) as exc:
+            _mark_media_failed(row.media_id, "Photo storage request failed")
+            raise HTTPException(status_code=503, detail="Photo storage is temporarily unavailable") from exc
 
         with engine.begin() as connection:
             connection.execute(
@@ -134,21 +143,17 @@ def sync_pending_photos(encounter_id: int, user_id: int) -> list[dict[str, Any]]
                 {"media_id": row.media_id},
             )
 
+        content_type = row.content_type or "image/jpeg"
+        extension = "png" if content_type == "image/png" else "jpg"
+        upload_name = f"spritedex-{row.media_id}.{extension}"
         try:
-            with path.open("rb") as handle:
-                response = httpx.post(
-                    f"{INAT_API_V2}/observation_photos",
-                    data={"observation_photo[observation_id]": observation_uuid},
-                    files={
-                        "file": (
-                            row.original_filename or path.name,
-                            handle,
-                            row.content_type or "image/jpeg",
-                        )
-                    },
-                    headers={"Authorization": f"Bearer {api_jwt}"},
-                    timeout=45,
-                )
+            response = httpx.post(
+                f"{INAT_API_V2}/observation_photos",
+                data={"observation_photo[observation_id]": observation_uuid},
+                files={"file": (upload_name, photo_bytes, content_type)},
+                headers={"Authorization": f"Bearer {api_jwt}"},
+                timeout=45,
+            )
             response.raise_for_status()
             remote = _first_payload(response.json())
             observation_photo_id = remote.get("id")
@@ -156,17 +161,7 @@ def sync_pending_photos(encounter_id: int, user_id: int) -> list[dict[str, Any]]
                 raise HTTPException(status_code=502, detail="iNaturalist photo response missing ID")
         except (httpx.HTTPError, ValueError, HTTPException) as exc:
             detail = exc.detail if isinstance(exc, HTTPException) else "iNaturalist photo upload failed"
-            with engine.begin() as connection:
-                connection.execute(
-                    text(
-                        """
-                        UPDATE encounter_media
-                        SET inat_sync_status = 'failed', inat_sync_error = :error
-                        WHERE media_id = :media_id
-                        """
-                    ),
-                    {"error": str(detail), "media_id": row.media_id},
-                )
+            _mark_media_failed(row.media_id, str(detail))
             if isinstance(exc, HTTPException):
                 raise
             raise HTTPException(status_code=502, detail="iNaturalist photo upload failed") from exc
@@ -220,7 +215,8 @@ async def create_field_encounter(
                 caption=caption,
             )
         except HTTPException as exc:
-            # The field record survives a bad/malformed photo. The client can replace it.
+            # The field record survives a malformed photo or storage outage. The
+            # client can attach/replace evidence later without losing the encounter.
             result["photo"] = None
             result["photo_error"] = exc.detail
 
@@ -230,7 +226,7 @@ async def create_field_encounter(
             photos = sync_pending_photos(encounter_id, current_user.user_id)
             result["inaturalist"] = {"status": "synced", "observation": observation, "photos": photos}
         except HTTPException as exc:
-            # Local save is the release gate: remote failure must never discard the encounter.
+            # Local save is the release gate: remote failure never discards the encounter.
             result["inaturalist"] = {"status": "failed", "detail": exc.detail}
     return result
 
