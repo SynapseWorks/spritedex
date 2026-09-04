@@ -7,16 +7,19 @@ from sqlalchemy.exc import SQLAlchemyError
 from .auth import me_router, router as auth_router
 from .database import engine
 from .encounter_routes import router as encounter_router
+from .inaturalist import encounter_sync_router, router as inaturalist_router
 from .species_routes import router as species_router
 
 app = FastAPI(
     title="SpriteDex API",
-    version="0.2.0",
-    description="V1 API for authenticated ecological encounters and Regional Dex exploration.",
+    version="0.3.0",
+    description="V1 API for authenticated ecological encounters, iNaturalist sync, and Regional Dex exploration.",
 )
 app.include_router(auth_router)
 app.include_router(me_router)
 app.include_router(encounter_router)
+app.include_router(encounter_sync_router)
+app.include_router(inaturalist_router)
 app.include_router(species_router)
 
 
