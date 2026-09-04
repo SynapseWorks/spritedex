@@ -100,9 +100,8 @@ class SupabaseMediaStorage:
             )
 
     def _headers(self, content_type: str | None = None) -> dict[str, str]:
-        # Supabase's legacy service-role JWT is intentionally server-only. Sending it
-        # in Authorization bypasses Storage RLS for this trusted backend; apikey is
-        # included for gateway compatibility.
+        # The service-role credential is server-only. Authorization bypasses Storage
+        # RLS for this trusted backend; apikey is included for gateway compatibility.
         headers = {
             "Authorization": f"Bearer {self.service_key}",
             "apikey": self.service_key,
@@ -159,13 +158,12 @@ class SupabaseMediaStorage:
                 "DELETE",
                 url,
                 json={"prefixes": [storage_key]},
-                headers={**self._headers("application/json")},
+                headers=self._headers("application/json"),
                 timeout=30,
             )
             response.raise_for_status()
         except httpx.HTTPError:
             # Cleanup is best-effort when a DB insert fails after the object upload.
-            # The primary request will still fail and operations logs retain context.
             pass
 
 
@@ -206,10 +204,10 @@ def normalize_image(data: bytes) -> tuple[bytes, str, str]:
     return data, "jpg", "image/jpeg"
 
 
-def get_media_storage():
-    provider = os.getenv("SPRITEDEX_MEDIA_PROVIDER", "local").strip().lower()
-    if provider == "local":
+def get_media_storage(provider: str | None = None):
+    resolved = (provider or os.getenv("SPRITEDEX_MEDIA_PROVIDER", "local")).strip().lower()
+    if resolved == "local":
         return LocalMediaStorage()
-    if provider == "supabase":
+    if resolved == "supabase":
         return SupabaseMediaStorage()
-    raise RuntimeError(f"Unsupported SPRITEDEX_MEDIA_PROVIDER: {provider}")
+    raise RuntimeError(f"Unsupported SPRITEDEX_MEDIA_PROVIDER: {resolved}")
