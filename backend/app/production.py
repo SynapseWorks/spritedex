@@ -25,7 +25,7 @@ class RequestSafetyMiddleware:
 
     def __init__(self, app, requests_per_minute: int = 180) -> None:
         self.app = app
-        self.limit = requests_per_minute
+        self.general_limit = requests_per_minute
         self._requests: dict[str, deque[float]] = defaultdict(deque)
         self._lock = Lock()
 
@@ -37,6 +37,21 @@ class RequestSafetyMiddleware:
                 return forwarded
         return request.client.host if request.client else "unknown"
 
+    def _rate_group(self, path: str) -> tuple[str, int]:
+        if path.startswith("/api/auth/"):
+            return "auth", 20
+        if path.startswith("/api/taxa/search"):
+            return "taxa", 60
+        if path.startswith("/api/inaturalist/connect") or path.startswith("/api/inaturalist/callback"):
+            return "oauth", 30
+        return "general", self.general_limit
+
+    def _max_body_bytes(self, path: str) -> int:
+        if path.startswith("/api/field/encounters") or "/photos" in path:
+            # V1 images are validated at 20 MB; leave room for multipart framing.
+            return 25 * 1024 * 1024
+        return 2 * 1024 * 1024
+
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -45,14 +60,29 @@ class RequestSafetyMiddleware:
         request = Request(scope)
         request_id = request.headers.get("x-request-id") or uuid.uuid4().hex[:16]
         now = time.monotonic()
-        key = self._client_key(request)
+        group, limit = self._rate_group(request.url.path)
+        key = f"{self._client_key(request)}:{group}"
+
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > self._max_body_bytes(request.url.path):
+                    response = JSONResponse(
+                        {"detail": "Request body is too large."},
+                        status_code=413,
+                        headers={"X-Request-ID": request_id},
+                    )
+                    await response(scope, receive, send)
+                    return
+            except ValueError:
+                pass
 
         with self._lock:
             bucket = self._requests[key]
             cutoff = now - 60
             while bucket and bucket[0] < cutoff:
                 bucket.popleft()
-            if len(bucket) >= self.limit:
+            if len(bucket) >= limit:
                 response = JSONResponse(
                     {"detail": "Too many requests. Try again shortly."},
                     status_code=429,
@@ -74,6 +104,7 @@ class RequestSafetyMiddleware:
                 headers.append((b"x-content-type-options", b"nosniff"))
                 headers.append((b"referrer-policy", b"strict-origin-when-cross-origin"))
                 headers.append((b"permissions-policy", b"geolocation=(self), camera=(self)"))
+                headers.append((b"cross-origin-opener-policy", b"same-origin"))
                 message["headers"] = headers
             await send(message)
 
