@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: spritedex
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SPRITEDEX_JWT_SECRET
+        generateValue: true
+      - key: SPRITEDEX_TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: SPRITEDEX_MEDIA_PROVIDER
+        value: supabase
+      - key: SPRITEDEX_MEDIA_BUCKET
+        value: encounter-media
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SPRITEDEX_TRUST_PROXY_HEADERS
+        value: "true"
+      - key: SPRITEDEX_REQUESTS_PER_MINUTE
+        value: "180"
+      - key: LOG_LEVEL
+        value: INFO
