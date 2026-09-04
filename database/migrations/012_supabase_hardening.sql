@@ -13,6 +13,7 @@ BEGIN
         SELECT tablename
         FROM pg_tables
         WHERE schemaname = 'public'
+          AND tableowner = current_user
     LOOP
         EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', r.tablename);
         EXECUTE format('REVOKE ALL ON TABLE public.%I FROM anon, authenticated', r.tablename);
@@ -28,6 +29,7 @@ BEGIN
         SELECT sequence_name
         FROM information_schema.sequences
         WHERE sequence_schema = 'public'
+          AND sequence_owner = current_user
     LOOP
         EXECUTE format('REVOKE ALL ON SEQUENCE public.%I FROM anon, authenticated', r.sequence_name);
     END LOOP;
