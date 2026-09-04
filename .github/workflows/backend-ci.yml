@@ -39,6 +39,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/spritedex
       PYTHONPATH: backend
+      # Test-only signing material. Production must provide its own secret outside Git.
+      SPRITEDEX_JWT_SECRET: ci-only-not-a-production-secret-change-me-0123456789
 
     steps:
       - name: Checkout repository
