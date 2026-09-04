@@ -39,8 +39,12 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/spritedex
       PYTHONPATH: backend
-      # Test-only signing material. Production must provide its own secret outside Git.
+      # Test-only material. Production values must be stored outside Git.
       SPRITEDEX_JWT_SECRET: ci-only-not-a-production-secret-change-me-0123456789
+      SPRITEDEX_TOKEN_ENCRYPTION_KEY: WEPWUnjBBtNBFFrMnFckIoHBDR6eH1iv4P8E6veOIzM=
+      INAT_CLIENT_ID: test-client-id
+      INAT_CLIENT_SECRET: test-client-secret
+      INAT_REDIRECT_URI: http://testserver/api/inaturalist/callback
 
     steps:
       - name: Checkout repository
