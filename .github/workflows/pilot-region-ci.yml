@@ -1,0 +1,111 @@
+name: Pilot Region CI
+
+on:
+  pull_request:
+    paths:
+      - "scripts/import_pilot_region.py"
+      - "database/**"
+      - "docs/pilot-region-ganaraska.md"
+      - ".github/workflows/pilot-region-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-ganaraska-pilot:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: spritedex
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d spritedex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/spritedex
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Prepare clean PostGIS database
+        run: bash scripts/validate_database.sh
+
+      - name: Install SpriteDex backend dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Import live GRCA boundary and seed safe iNaturalist evidence
+        run: >-
+          python scripts/import_pilot_region.py
+          --database-url "$DATABASE_URL"
+          --seed-inaturalist
+          --as-of-date 2026-09-04
+          --lookback-years 5
+
+      - name: Verify persisted pilot state
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d spritedex -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+              v_region_id BIGINT;
+              v_valid BOOLEAN;
+              v_area NUMERIC;
+              v_observations BIGINT;
+              v_taxa BIGINT;
+          BEGIN
+              SELECT region_id, ST_IsValid(boundary), ST_Area(boundary::geography) / 1000000.0
+              INTO v_region_id, v_valid, v_area
+              FROM regions
+              WHERE slug = 'ganaraska-forest';
+
+              IF v_region_id IS NULL THEN
+                  RAISE EXCEPTION 'Ganaraska Forest pilot Region was not persisted';
+              END IF;
+              IF NOT v_valid THEN
+                  RAISE EXCEPTION 'Ganaraska Forest boundary is invalid';
+              END IF;
+              IF v_area NOT BETWEEN 25 AND 75 THEN
+                  RAISE EXCEPTION 'Unexpected Ganaraska Forest area: % km2', v_area;
+              END IF;
+
+              SELECT COUNT(DISTINCT external_observation_id)
+              INTO v_observations
+              FROM external_observation_regions
+              WHERE region_id = v_region_id
+                AND membership_status = 'confirmed';
+
+              SELECT COUNT(*)
+              INTO v_taxa
+              FROM region_species
+              WHERE region_id = v_region_id;
+
+              IF v_observations < 1 THEN
+                  RAISE EXCEPTION 'No safe public iNaturalist observations matched the pilot Region';
+              END IF;
+              IF v_taxa < 1 THEN
+                  RAISE EXCEPTION 'Pilot Region produced no Regional Dex taxa';
+              END IF;
+
+              RAISE NOTICE 'Ganaraska pilot persisted: region=%, area=% km2, observations=%, taxa=%',
+                  v_region_id, ROUND(v_area, 2), v_observations, v_taxa;
+          END $$;
+          SQL
