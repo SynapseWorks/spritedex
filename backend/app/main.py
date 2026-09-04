@@ -1,35 +1,23 @@
-from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
+from .auth import me_router, router as auth_router
 from .database import engine
+from .encounter_routes import router as encounter_router
 from .species_routes import router as species_router
 
 app = FastAPI(
     title="SpriteDex API",
-    version="0.1.0",
-    description="Core V1 API for ecological encounters and Regional Dex exploration.",
+    version="0.2.0",
+    description="V1 API for authenticated ecological encounters and Regional Dex exploration.",
 )
+app.include_router(auth_router)
+app.include_router(me_router)
+app.include_router(encounter_router)
 app.include_router(species_router)
-
-
-class EncounterCreate(BaseModel):
-    species_id: int
-    # Temporary Epic 2 bridge. Epic 3 replaces caller-supplied ownership with auth.
-    user_id: int | None = None
-    latitude: float = Field(ge=-90, le=90)
-    longitude: float = Field(ge=-180, le=180)
-    encountered_at: datetime | None = None
-    location_description: str | None = None
-    habitat: str | None = None
-    life_stage: str | None = None
-    quantity_estimate: str | None = None
-    confidence_level: str | None = None
-    notes: str | None = None
 
 
 def _mapping(row: Any) -> dict[str, Any]:
@@ -161,118 +149,3 @@ def get_region_dex(
             {"region_id": region_id, "eligible_only": eligible_only},
         )
         return [_mapping(row) for row in rows]
-
-
-@app.post("/api/encounters", status_code=201)
-def create_encounter(payload: EncounterCreate) -> dict[str, Any]:
-    insert_sql = text(
-        """
-        INSERT INTO encounters (
-            species_id,
-            user_id,
-            encountered_at,
-            location,
-            location_description,
-            habitat,
-            life_stage,
-            quantity_estimate,
-            confidence_level,
-            notes
-        ) VALUES (
-            :species_id,
-            :user_id,
-            COALESCE(:encountered_at, NOW()),
-            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
-            :location_description,
-            :habitat,
-            :life_stage,
-            :quantity_estimate,
-            :confidence_level,
-            :notes
-        )
-        RETURNING encounter_id
-        """
-    )
-
-    values = payload.model_dump()
-    try:
-        with engine.begin() as connection:
-            encounter_id = connection.execute(insert_sql, values).scalar_one()
-            connection.execute(
-                text("SELECT process_encounter_regions(:encounter_id)"),
-                {"encounter_id": encounter_id},
-            )
-            region_ids = list(
-                connection.execute(
-                    text(
-                        """
-                        SELECT region_id
-                        FROM encounter_regions
-                        WHERE encounter_id = :encounter_id
-                          AND membership_status = 'confirmed'
-                        ORDER BY region_id
-                        """
-                    ),
-                    {"encounter_id": encounter_id},
-                ).scalars()
-            )
-    except IntegrityError as exc:
-        raise HTTPException(
-            status_code=400,
-            detail="Encounter references an unknown user or species",
-        ) from exc
-
-    return {"encounter_id": encounter_id, "region_ids": region_ids}
-
-
-@app.get("/api/encounters/{encounter_id}")
-def get_encounter(encounter_id: int) -> dict[str, Any]:
-    encounter_sql = text(
-        """
-        SELECT
-            e.encounter_id,
-            e.user_id,
-            e.species_id,
-            s.common_name,
-            s.scientific_name,
-            e.encountered_at,
-            ST_Y(e.location::geometry) AS latitude,
-            ST_X(e.location::geometry) AS longitude,
-            e.location_description,
-            e.habitat,
-            e.life_stage,
-            e.quantity_estimate,
-            e.confidence_level,
-            e.notes
-        FROM encounters e
-        LEFT JOIN species s ON s.species_id = e.species_id
-        WHERE e.encounter_id = :encounter_id
-        """
-    )
-    regions_sql = text(
-        """
-        SELECT r.region_id, r.name, r.slug, r.region_type
-        FROM encounter_regions er
-        JOIN regions r ON r.region_id = er.region_id
-        WHERE er.encounter_id = :encounter_id
-          AND er.membership_status = 'confirmed'
-        ORDER BY r.name
-        """
-    )
-
-    with engine.connect() as connection:
-        row = connection.execute(
-            encounter_sql,
-            {"encounter_id": encounter_id},
-        ).first()
-        if row is None:
-            raise HTTPException(status_code=404, detail="Encounter not found")
-        result = _mapping(row)
-        result["regions"] = [
-            _mapping(region)
-            for region in connection.execute(
-                regions_sql,
-                {"encounter_id": encounter_id},
-            )
-        ]
-    return result
