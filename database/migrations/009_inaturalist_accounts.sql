@@ -30,7 +30,9 @@ ALTER TABLE encounters
     ADD COLUMN IF NOT EXISTS inat_sync_status TEXT NOT NULL DEFAULT 'not_requested'
         CHECK (inat_sync_status IN ('not_requested', 'pending', 'synced', 'failed')),
     ADD COLUMN IF NOT EXISTS inat_sync_error TEXT,
-    ADD COLUMN IF NOT EXISTS inat_synced_at TIMESTAMPTZ;
+    ADD COLUMN IF NOT EXISTS inat_quality_grade TEXT,
+    ADD COLUMN IF NOT EXISTS inat_synced_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS inat_last_reconciled_at TIMESTAMPTZ;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_encounters_inat_observation_id
 ON encounters(inat_observation_id)
