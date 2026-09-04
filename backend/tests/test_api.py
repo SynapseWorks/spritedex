@@ -110,7 +110,7 @@ def test_health() -> None:
     assert response.json() == {"status": "ok", "database": "ok"}
 
 
-def test_region_and_encounter_loop() -> None:
+def test_region_species_and_encounter_loop() -> None:
     region_id = app.state.test_region_id
     species_id = app.state.test_species_id
     user_id = app.state.test_user_id
@@ -130,6 +130,12 @@ def test_region_and_encounter_loop() -> None:
     assert dex.status_code == 200
     assert dex.json()[0]["common_name"] == "American Robin"
     assert dex.json()[0]["public_tier"] == "familiar"
+
+    species = client.get(f"/api/species/{species_id}")
+    assert species.status_code == 200
+    assert species.json()["common_name"] == "American Robin"
+    assert species.json()["scientific_name"] == "Turdus migratorius"
+    assert species.json()["inat_taxon_id"] == 12727
 
     created = client.post(
         "/api/encounters",
