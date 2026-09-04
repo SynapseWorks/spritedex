@@ -10,14 +10,16 @@ from .encounter_routes import router as encounter_router
 from .field_routes import router as field_router
 from .inaturalist import encounter_sync_router, router as inaturalist_router
 from .media_routes import router as media_router
+from .oauth_redirect import InaturalistCallbackRedirectMiddleware
 from .species_routes import router as species_router
 from .taxon_routes import router as taxon_router
 
 app = FastAPI(
     title="SpriteDex API",
-    version="0.4.0",
+    version="0.5.0",
     description="V1 API for field encounters, Regional Dex discovery, media, authentication, and iNaturalist sync.",
 )
+app.add_middleware(InaturalistCallbackRedirectMiddleware)
 app.include_router(auth_router)
 app.include_router(me_router)
 app.include_router(encounter_router)
