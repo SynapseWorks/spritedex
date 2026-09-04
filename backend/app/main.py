@@ -7,19 +7,25 @@ from sqlalchemy.exc import SQLAlchemyError
 from .auth import me_router, router as auth_router
 from .database import engine
 from .encounter_routes import router as encounter_router
+from .field_routes import router as field_router
 from .inaturalist import encounter_sync_router, router as inaturalist_router
+from .media_routes import router as media_router
 from .species_routes import router as species_router
+from .taxon_routes import router as taxon_router
 
 app = FastAPI(
     title="SpriteDex API",
-    version="0.3.0",
-    description="V1 API for authenticated ecological encounters, iNaturalist sync, and Regional Dex exploration.",
+    version="0.4.0",
+    description="V1 API for field encounters, Regional Dex discovery, media, authentication, and iNaturalist sync.",
 )
 app.include_router(auth_router)
 app.include_router(me_router)
 app.include_router(encounter_router)
+app.include_router(media_router)
 app.include_router(encounter_sync_router)
 app.include_router(inaturalist_router)
+app.include_router(taxon_router)
+app.include_router(field_router)
 app.include_router(species_router)
 
 
@@ -130,7 +136,9 @@ def get_region_dex(
             s.scientific_name,
             s.category,
             s.inat_taxon_id,
+            s.inat_rank,
             s.iconic_taxon_name,
+            s.inat_default_photo_url,
             rs.dex_eligible,
             rs.seasonal_active,
             rs.public_tier,
