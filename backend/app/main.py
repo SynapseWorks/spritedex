@@ -7,12 +7,14 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from .database import engine
+from .species_routes import router as species_router
 
 app = FastAPI(
     title="SpriteDex API",
     version="0.1.0",
     description="Core V1 API for ecological encounters and Regional Dex exploration.",
 )
+app.include_router(species_router)
 
 
 class EncounterCreate(BaseModel):
